@@ -17,9 +17,21 @@ const createGameGrid = (width: number, height: number) => {
 
 function App() {
   const [gameGrid, setGameGrid] = useState<number[][] | undefined>(
-    createGameGrid(21, 21)
+    createGameGrid(20, 20)
   );
   const [hideShape, setHideShape] = useState<boolean>(false);
+
+  const placePiece = () => {
+    const gameGridCopy = gameGrid?.map((row) => {
+      return row.map((cell) => {
+        if (cell === 2) {
+          return 1;
+        } else return 0;
+      });
+    });
+
+    setGameGrid(gameGridCopy);
+  };
 
   const handleOnShapeClick = (gamePiece: number[][]) => {
     // Create a deep copy of gameGrid
@@ -28,7 +40,9 @@ function App() {
       let gameGridRow = 0;
       gamePiece.map((row) => {
         row.map((cell, cellIndex) => {
-          gameGridCopy[gameGridRow][cellIndex] = cell;
+          if (cell === 1) {
+            gameGridCopy[gameGridRow][cellIndex] = 2;
+          }
         });
         gameGridRow++;
       });
@@ -36,16 +50,11 @@ function App() {
     setHideShape(true);
     setGameGrid(gameGridCopy);
   };
-
-  useEffect(() => {
-    console.log(gameGrid);
-  }, [gameGrid]);
-
   return (
     <>
       <div className="h-screen w-screen flex flex-col justify-center items-center">
-        <GameGrid gameGrid={gameGrid} />
-        {!hideShape && <Shape handleOnShapeClick={handleOnShapeClick} />}
+        <GameGrid gameGrid={gameGrid} placePiece={placePiece} />
+        <Shape handleOnShapeClick={handleOnShapeClick} />
       </div>
     </>
   );

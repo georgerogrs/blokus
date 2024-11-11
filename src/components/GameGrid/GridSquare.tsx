@@ -3,9 +3,10 @@ import { BLOCK_SIZE } from "../../gameSettings";
 
 interface GridSquareProps {
   backgroundColor: string;
+  onClick: () => void;
 }
 
-const GridSquare = ({ backgroundColor }: GridSquareProps) => {
+const GridSquare = ({ backgroundColor, onClick }: GridSquareProps) => {
   return (
     <div
       className="border-black"
@@ -15,6 +16,7 @@ const GridSquare = ({ backgroundColor }: GridSquareProps) => {
         height: BLOCK_SIZE,
         backgroundColor: backgroundColor,
       }}
+      onClick={onClick}
     />
   );
 };
