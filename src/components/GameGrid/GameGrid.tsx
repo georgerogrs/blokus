@@ -1,20 +1,13 @@
 import React, { useEffect, useState } from "react";
 import GridSquare from "./GridSquare";
+import { SELECT_BG_COLOR } from "../../gameSettings";
 
 interface GameGridProps {
   gameGrid: number[][] | undefined;
-  placePiece: () => void;
+  handleOnShapeOnBoardClick: (rowIndex: number, cellIndex: number) => void;
 }
 
-const GameGrid = ({ gameGrid, placePiece }: GameGridProps) => {
-  const handleOnClick = (rowIndex: number, cellIndex: number) => {
-    if (gameGrid) {
-      if (gameGrid[rowIndex][cellIndex] === 2) {
-        placePiece();
-      }
-    }
-  };
-
+const GameGrid = ({ gameGrid, handleOnShapeOnBoardClick }: GameGridProps) => {
   return (
     <div
       className="m-3 border-black cursor-pointer"
@@ -29,13 +22,13 @@ const GameGrid = ({ gameGrid, placePiece }: GameGridProps) => {
                 backgroundColor = "red";
               }
               if (cell === 2) {
-                backgroundColor = "lightblue";
+                backgroundColor = SELECT_BG_COLOR;
               }
               return (
                 <GridSquare
                   key={cellIndex}
                   backgroundColor={backgroundColor}
-                  onClick={() => handleOnClick(rowIndex, cellIndex)}
+                  onClick={() => handleOnShapeOnBoardClick(rowIndex, cellIndex)}
                 />
               );
             })}

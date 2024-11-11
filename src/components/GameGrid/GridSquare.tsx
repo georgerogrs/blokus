@@ -1,5 +1,5 @@
 import React from "react";
-import { BLOCK_SIZE } from "../../gameSettings";
+import { BLOCK_SIZE, SELECT_BG_COLOR } from "../../gameSettings";
 
 interface GridSquareProps {
   backgroundColor: string;
@@ -15,6 +15,7 @@ const GridSquare = ({ backgroundColor, onClick }: GridSquareProps) => {
         width: BLOCK_SIZE,
         height: BLOCK_SIZE,
         backgroundColor: backgroundColor,
+        opacity: backgroundColor === SELECT_BG_COLOR ? 0.3 : 1,
       }}
       onClick={onClick}
     />
