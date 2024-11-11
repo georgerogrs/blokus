@@ -15,10 +15,9 @@ export const T_PIECE = [
 ];
 
 export const ZIG_PIECE = [
-  [1, 0, 0, 0],
-  [1, 1, 0, 0],
-  [0, 1, 1, 0],
-  [0, 0, 1, 1],
+  [1, 0, 0],
+  [1, 1, 0],
+  [0, 1, 1],
 ];
 
 export const PLUS_PIECE = [
