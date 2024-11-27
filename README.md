@@ -1,1 +1,1 @@
-Blokus game.
+Blokus game built in React.
