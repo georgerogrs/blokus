@@ -1,10 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "./App.css";
 import GameGrid from "./components/GameGrid";
 import Shape from "./components/Shape";
 import ShapeContainer from "./components/ShapeContainer";
-import { L_PIECE, T_PIECE, ZIG_PIECE } from "./gameSettings";
-import { useGameEngine } from "./hooks/useGameEngine";
+import {
+  BENCH_PIECE,
+  DUAL_PIECE,
+  L_PIECE,
+  PLUS_PIECE,
+  SINGLE_PIECE,
+  SNAKE_PIECE,
+  SQUARE_PIECE,
+  T_PIECE,
+  ZIG_PIECE,
+} from "./gameSettings";
+import { useBoardOperations } from "./hooks/useBoardOperations";
+import { useGamePieceOperations } from "./hooks/useGamePieceOperations";
 
 const createGameGrid = (width: number, height: number) => {
   const grid = [];
@@ -18,43 +29,10 @@ const createGameGrid = (width: number, height: number) => {
   return grid;
 };
 
-const rotateGamePiece = (gamePiece: number[][]) => {
-  const rotatedGamePiece = [];
-  for (let i = 0; i < gamePiece[0].length; i++) {
-    const array = [];
-    for (let j = 0; j < gamePiece.length; j++) {
-      array.push(gamePiece[j][i]);
-    }
-    rotatedGamePiece.push(array.reverse());
-  }
-  return rotatedGamePiece;
-};
-
-const findValidCorners = (gameGrid: number[][]) => {
-  let mapPopulated = false;
-  gameGrid.forEach((row) =>
-    row.forEach((cell) => {
-      if (cell === 1) {
-        mapPopulated = true;
-      }
-    })
-  );
-
-  if (!mapPopulated) {
-    const max = gameGrid.length - 1;
-    return [
-      [0, 0],
-      [0, max],
-      [max, 0],
-      [max, max],
-    ];
-  }
-
-  return [];
-};
-
 function App() {
-  const { findAllTouchingCells } = useGameEngine();
+  const { findAllTouchingCells, findValidCorners } = useBoardOperations();
+  const { rotateGamePiece } = useGamePieceOperations();
+
   const [gameGrid, setGameGrid] = useState<number[][]>(createGameGrid(20, 20));
   const [selectedGamePiece, setSelectedGamePiece] = useState<number[][]>([]);
   const [hiddenGamePieces, setHiddenGamePieces] = useState<number[][][]>([]);
@@ -67,25 +45,27 @@ function App() {
   };
 
   const handleOnShapeClick = (gamePiece: number[][]) => {
-    removeUnplacedPieces();
+    removeUnplacedPieces(); // Hide all shape outlines
+
     const gameGridCopy: number[][] = gameGrid.map((row) => {
       return row.map((cell) => (cell === 2 ? 0 : cell === 1 ? 1 : 0));
     });
 
-    let startingPoints = findValidCorners(gameGridCopy);
-    startingPoints = [
-      [0, 0],
-      [0, 17],
-    ];
+    const startingPoints = findValidCorners(gameGridCopy, gamePiece); // Get all valid corners to place piece
+
     startingPoints.map((startingPoint) => {
-      gamePiece.forEach((row) => {
-        row.forEach((cell, cellIndex) => {
-          if (cell === 1) {
-            gameGridCopy[startingPoint[1]][startingPoint[0] + cellIndex] = 2;
-          }
+      try {
+        return gamePiece.forEach((row) => {
+          row.forEach((cell, cellIndex) => {
+            if (cell === 1) {
+              gameGridCopy[startingPoint[1]][startingPoint[0] + cellIndex] = 2;
+            }
+          });
+          startingPoint[1]++;
         });
-        startingPoint[1]++;
-      });
+      } catch {
+        return null; // Game piece outline does not fit on grid -> return null
+      }
     });
 
     setSelectedGamePiece(gamePiece);
@@ -109,6 +89,7 @@ function App() {
       hiddenGamePiecesCopy.push(selectedGamePiece);
       setHiddenGamePieces(hiddenGamePiecesCopy);
     }
+    removeUnplacedPieces();
   };
 
   return (
@@ -128,14 +109,35 @@ function App() {
             hiddenGamePieces={hiddenGamePieces}
           />
           <Shape
-            type={T_PIECE}
+            type={ZIG_PIECE}
             handleOnShapeClick={handleOnShapeClick}
             rotateGamePiece={rotateGamePiece}
             removeUnplacedPieces={removeUnplacedPieces}
             hiddenGamePieces={hiddenGamePieces}
           />
           <Shape
-            type={ZIG_PIECE}
+            type={PLUS_PIECE}
+            handleOnShapeClick={handleOnShapeClick}
+            rotateGamePiece={rotateGamePiece}
+            removeUnplacedPieces={removeUnplacedPieces}
+            hiddenGamePieces={hiddenGamePieces}
+          />
+          <Shape
+            type={DUAL_PIECE}
+            handleOnShapeClick={handleOnShapeClick}
+            rotateGamePiece={rotateGamePiece}
+            removeUnplacedPieces={removeUnplacedPieces}
+            hiddenGamePieces={hiddenGamePieces}
+          />
+          <Shape
+            type={BENCH_PIECE}
+            handleOnShapeClick={handleOnShapeClick}
+            rotateGamePiece={rotateGamePiece}
+            removeUnplacedPieces={removeUnplacedPieces}
+            hiddenGamePieces={hiddenGamePieces}
+          />
+          <Shape
+            type={SNAKE_PIECE}
             handleOnShapeClick={handleOnShapeClick}
             rotateGamePiece={rotateGamePiece}
             removeUnplacedPieces={removeUnplacedPieces}
