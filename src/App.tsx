@@ -1,20 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import GameGrid from "./components/GameGrid";
 import Shape from "./components/Shape";
 import ShapeContainer from "./components/ShapeContainer";
 import {
-  BENCH_PIECE,
-  DUAL_PIECE,
   L_PIECE,
-  PLUS_PIECE,
-  SINGLE_PIECE,
-  SNAKE_PIECE,
-  SQUARE_PIECE,
   T_PIECE,
   ZIG_PIECE,
+  PLUS_PIECE,
+  SQUARE_PIECE,
 } from "./gameSettings";
-import { useBoardOperations } from "./hooks/useBoardOperations";
 import { useGamePieceOperations } from "./hooks/useGamePieceOperations";
 
 const createGameGrid = (width: number, height: number) => {
@@ -30,118 +25,136 @@ const createGameGrid = (width: number, height: number) => {
 };
 
 function App() {
-  const { findAllTouchingCells, findValidCorners } = useBoardOperations();
   const { rotateGamePiece } = useGamePieceOperations();
 
   const [gameGrid, setGameGrid] = useState<number[][]>(createGameGrid(20, 20));
   const [selectedGamePiece, setSelectedGamePiece] = useState<number[][]>([]);
   const [hiddenGamePieces, setHiddenGamePieces] = useState<number[][][]>([]);
+  const [currentCoords, setCurrentCoords] = useState<number[]>([]);
+  const [blockClicked, setBlockClicked] = useState<boolean>(false);
+  const [clickedShapeCoords, setClickedShapeCoords] = useState<number[]>([]);
 
-  const removeUnplacedPieces = () => {
-    const gameGridCopy = gameGrid.map((row) => {
-      return row.map((cell) => (cell === 2 ? 0 : cell === 1 ? 1 : 0));
-    });
-    setGameGrid(gameGridCopy);
-  };
-
-  const handleOnShapeClick = (gamePiece: number[][]) => {
-    removeUnplacedPieces(); // Hide all shape outlines
-
-    const gameGridCopy: number[][] = gameGrid.map((row) => {
-      return row.map((cell) => (cell === 2 ? 0 : cell === 1 ? 1 : 0));
-    });
-
-    const startingPoints = findValidCorners(gameGridCopy, gamePiece); // Get all valid corners to place piece
-
-    startingPoints.map((startingPoint) => {
-      try {
-        return gamePiece.forEach((row) => {
-          row.forEach((cell, cellIndex) => {
-            if (cell === 1) {
-              gameGridCopy[startingPoint[1]][startingPoint[0] + cellIndex] = 2;
-            }
-          });
-          startingPoint[1]++;
-        });
-      } catch {
-        return null; // Game piece outline does not fit on grid -> return null
-      }
-    });
-
-    setSelectedGamePiece(gamePiece);
-    setGameGrid(gameGridCopy);
-  };
-
-  const handleOnShapeOnBoardClick = (rowIndex: number, cellIndex: number) => {
-    if (gameGrid[rowIndex][cellIndex] === 2) {
-      const touchingCells = findAllTouchingCells(gameGrid, [
-        rowIndex,
-        cellIndex,
-      ]);
-      const gameGridCopy = [...gameGrid];
-      touchingCells?.forEach((coordinate) => {
-        gameGridCopy[coordinate[0]][coordinate[1]] = 1;
-      });
-      setGameGrid(gameGridCopy);
-      // Copy hidden game pieces array
-      const hiddenGamePiecesCopy = [...hiddenGamePieces];
-      // Push current game piece
-      hiddenGamePiecesCopy.push(selectedGamePiece);
-      setHiddenGamePieces(hiddenGamePiecesCopy);
+  const handleGridSquareEnter = (coords: number[]) => {
+    if (coords) {
+      setCurrentCoords(coords);
     }
-    removeUnplacedPieces();
   };
+
+  const placePieceOnGrid = (
+    gameGridCopy: number[][],
+    coordsOnGrid: number[],
+    gamePiece: number[][],
+    clickedShapeCoord: number[]
+  ) => {
+    // Work out how much to go up
+    const goUp = coordsOnGrid[0] - clickedShapeCoord[0];
+
+    // Work out how much to go left
+    const goLeft = coordsOnGrid[1] - clickedShapeCoord[1];
+
+    const startingCoord = [goUp, goLeft];
+
+    console.log("startingCoord:", startingCoord);
+
+    if (!isNaN(startingCoord[0]) && !isNaN(startingCoord[1])) {
+      // Place gamePiece from starting coordinate
+      for (let i = 0; i < gamePiece.length; i++) {
+        for (let j = 0; j < gamePiece[i].length; j++) {
+          if (gamePiece[i][j] === 1) {
+            if (!gameGridCopy[startingCoord[0] + i]) return false;
+
+            gameGridCopy[startingCoord[0] + i][startingCoord[1] + j] = 1;
+          }
+        }
+      }
+
+      return gameGridCopy;
+    } else return false;
+  };
+
+  const handleBlockClick = (gamePiece: number[][], shapeCoords: number[]) => {
+    setBlockClicked(true);
+    setSelectedGamePiece(gamePiece);
+    setClickedShapeCoords(shapeCoords);
+  };
+
+  const handleBlockMouseUp = (event: MouseEvent) => {
+    if (blockClicked) {
+      const gameGridCopy = placePieceOnGrid(
+        [...gameGrid],
+        currentCoords,
+        selectedGamePiece,
+        clickedShapeCoords
+      );
+      if (gameGridCopy) {
+        setGameGrid(gameGridCopy);
+
+        const hiddenGamePiecesCopy = [...hiddenGamePieces];
+        hiddenGamePiecesCopy.push(selectedGamePiece);
+        setHiddenGamePieces(hiddenGamePiecesCopy);
+      }
+
+      setBlockClicked(false);
+    }
+  };
+
+  useEffect(() => {
+    if (blockClicked) {
+      // Add the mouseup event listener when block is clicked
+      window.addEventListener("mouseup", handleBlockMouseUp);
+    } else {
+      // Remove the event listener when blockClicked is false
+      window.removeEventListener("mouseup", handleBlockMouseUp);
+    }
+
+    // Cleanup function
+    return () => {
+      window.removeEventListener("mouseup", handleBlockMouseUp);
+    };
+  }, [blockClicked, selectedGamePiece, currentCoords, clickedShapeCoords]);
+
+  useEffect(() => {
+    console.log("gameGrid", gameGrid);
+  }, [gameGrid]);
 
   return (
     <>
       <div className="h-screen w-screen flex flex-col justify-center items-center">
         <GameGrid
           gameGrid={gameGrid}
-          handleOnShapeOnBoardClick={handleOnShapeOnBoardClick}
+          handleGridSquareEnter={handleGridSquareEnter}
         />
 
         <ShapeContainer>
           <Shape
             type={L_PIECE}
-            handleOnShapeClick={handleOnShapeClick}
             rotateGamePiece={rotateGamePiece}
-            removeUnplacedPieces={removeUnplacedPieces}
             hiddenGamePieces={hiddenGamePieces}
+            handleBlockClick={handleBlockClick}
+          />
+          <Shape
+            type={T_PIECE}
+            rotateGamePiece={rotateGamePiece}
+            hiddenGamePieces={hiddenGamePieces}
+            handleBlockClick={handleBlockClick}
           />
           <Shape
             type={ZIG_PIECE}
-            handleOnShapeClick={handleOnShapeClick}
             rotateGamePiece={rotateGamePiece}
-            removeUnplacedPieces={removeUnplacedPieces}
             hiddenGamePieces={hiddenGamePieces}
+            handleBlockClick={handleBlockClick}
           />
           <Shape
             type={PLUS_PIECE}
-            handleOnShapeClick={handleOnShapeClick}
             rotateGamePiece={rotateGamePiece}
-            removeUnplacedPieces={removeUnplacedPieces}
             hiddenGamePieces={hiddenGamePieces}
+            handleBlockClick={handleBlockClick}
           />
           <Shape
-            type={DUAL_PIECE}
-            handleOnShapeClick={handleOnShapeClick}
+            type={SQUARE_PIECE}
             rotateGamePiece={rotateGamePiece}
-            removeUnplacedPieces={removeUnplacedPieces}
             hiddenGamePieces={hiddenGamePieces}
-          />
-          <Shape
-            type={BENCH_PIECE}
-            handleOnShapeClick={handleOnShapeClick}
-            rotateGamePiece={rotateGamePiece}
-            removeUnplacedPieces={removeUnplacedPieces}
-            hiddenGamePieces={hiddenGamePieces}
-          />
-          <Shape
-            type={SNAKE_PIECE}
-            handleOnShapeClick={handleOnShapeClick}
-            rotateGamePiece={rotateGamePiece}
-            removeUnplacedPieces={removeUnplacedPieces}
-            hiddenGamePieces={hiddenGamePieces}
+            handleBlockClick={handleBlockClick}
           />
         </ShapeContainer>
       </div>

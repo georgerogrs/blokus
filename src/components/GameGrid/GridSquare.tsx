@@ -3,10 +3,9 @@ import { BLOCK_SIZE, SELECT_BG_COLOR } from "../../gameSettings";
 
 interface GridSquareProps {
   backgroundColor: string;
-  onClick: () => void;
 }
 
-const GridSquare = ({ backgroundColor, onClick }: GridSquareProps) => {
+const GridSquare = ({ backgroundColor }: GridSquareProps) => {
   return (
     <div
       className="border-black"
@@ -15,9 +14,8 @@ const GridSquare = ({ backgroundColor, onClick }: GridSquareProps) => {
         width: BLOCK_SIZE,
         height: BLOCK_SIZE,
         backgroundColor: backgroundColor,
-        opacity: backgroundColor === SELECT_BG_COLOR ? 0.3 : 1,
+        opacity: backgroundColor === SELECT_BG_COLOR ? 0.3 : 0.75,
       }}
-      onClick={onClick}
     />
   );
 };

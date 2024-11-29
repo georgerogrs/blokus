@@ -134,6 +134,19 @@ export const useBoardOperations = () => {
         if (gameGrid[i][j] === 1) {
           const coord = [i, j]; // Coord of selected shape
           const coordinateDiagonals = getCoordinateDiagonals(coord);
+          const validCoordinateDiagonals = [...coordinateDiagonals].filter(
+            (coord: number[]) => {
+              if (
+                coord[0] > 0 &&
+                coord[1] > 0 &&
+                withinMatrixBounds(gameGrid, coord)
+              ) {
+                if (gameGrid[coord[0]][coord[1]] === 0) {
+                  return coord;
+                }
+              }
+            }
+          );
         }
       }
     }
