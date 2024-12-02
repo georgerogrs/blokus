@@ -8,6 +8,7 @@ interface ShapeProps {
   hiddenGamePieces: number[][][];
   rotateGamePiece: (gamePiece: number[][]) => number[][];
   handleBlockClick: (gamePiece: number[][], shapeCoords: number[]) => void;
+  position: { x: number; y: number };
 }
 
 const Shape = ({
@@ -15,6 +16,7 @@ const Shape = ({
   hiddenGamePieces,
   rotateGamePiece,
   handleBlockClick,
+  position,
 }: ShapeProps) => {
   const [gamePiece, setGamePiece] = useState<number[][]>(type);
   const [degrees, setDegrees] = useState<number>(0);
@@ -44,10 +46,11 @@ const Shape = ({
 
   return (
     <Draggable
+      position={position}
       handle=".handle"
-      defaultPosition={{ x: 0, y: 0 }}
       scale={1}
       disabled={disableDraggable}
+      grid={[40, 40]}
     >
       <div className="handle">
         {!hideShape && (

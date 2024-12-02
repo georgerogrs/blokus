@@ -26,7 +26,6 @@ const createGameGrid = (width: number, height: number) => {
 };
 
 function App() {
-  const { withinMatrixBounds } = useArrayOperations();
   const { rotateGamePiece } = useGamePieceOperations();
 
   const [gameGrid, setGameGrid] = useState<number[][]>(createGameGrid(20, 20));
@@ -35,48 +34,25 @@ function App() {
   const [currentCoords, setCurrentCoords] = useState<number[]>([]);
   const [blockClicked, setBlockClicked] = useState<boolean>(false);
   const [clickedShapeCoords, setClickedShapeCoords] = useState<number[]>([]);
+  const [cursorInGrid, setCursorInGrid] = useState<boolean>(false);
+  const initialPosition = { x: 0, y: 0 };
+  const [gamePieceDefaultPosition, setGamePieceDefaultPosition] =
+    useState(initialPosition);
+
+  useState<boolean>(false);
+
+  const handleGridEnter = () => {
+    setCursorInGrid(true);
+  };
+
+  const handleGridLeave = () => {
+    setCursorInGrid(false);
+  };
 
   const handleGridSquareEnter = (coords: number[]) => {
     if (coords) {
       setCurrentCoords(coords);
     }
-  };
-
-  const handleGridSquareLeave = (coords: number[]) => {
-    console.log("prevCoords", currentCoords);
-    console.log("coords", coords);
-  };
-
-  const placePieceOnGrid = (
-    gameGridCopy: number[][],
-    coordsOnGrid: number[],
-    gamePiece: number[][],
-    clickedShapeCoord: number[]
-  ) => {
-    // Work out how much to go up
-    const goUp = coordsOnGrid[0] - clickedShapeCoord[0];
-
-    // Work out how much to go left
-    const goLeft = coordsOnGrid[1] - clickedShapeCoord[1];
-
-    const startingCoord = [goUp, goLeft];
-
-    console.log("startingCoord:", startingCoord);
-
-    if (!isNaN(startingCoord[0]) && !isNaN(startingCoord[1])) {
-      // Place gamePiece from starting coordinate
-      for (let i = 0; i < gamePiece.length; i++) {
-        for (let j = 0; j < gamePiece[i].length; j++) {
-          if (gamePiece[i][j] === 1) {
-            if (!gameGridCopy[startingCoord[0] + i]) return false;
-
-            gameGridCopy[startingCoord[0] + i][startingCoord[1] + j] = 1;
-          }
-        }
-      }
-
-      return gameGridCopy;
-    } else return false;
   };
 
   const handleBlockClick = (gamePiece: number[][], shapeCoords: number[]) => {
@@ -86,6 +62,47 @@ function App() {
   };
 
   useEffect(() => {
+    const resetGamePieces = () => {
+      setGamePieceDefaultPosition(initialPosition);
+    };
+
+    const placePieceOnGrid = (
+      gameGridCopy: number[][],
+      coordsOnGrid: number[],
+      gamePiece: number[][],
+      clickedShapeCoord: number[]
+    ) => {
+      // Work out how much to go up
+      const goUp = coordsOnGrid[0] - clickedShapeCoord[0];
+
+      // Work out how much to go left
+      const goLeft = coordsOnGrid[1] - clickedShapeCoord[1];
+
+      const startingCoord = [goUp, goLeft];
+
+      if (
+        !isNaN(startingCoord[0]) &&
+        !isNaN(startingCoord[1]) &&
+        cursorInGrid
+      ) {
+        // TODO: Check is able to go on game grid
+
+        // Place gamePiece from starting coordinate
+        for (let i = 0; i < gamePiece.length; i++) {
+          for (let j = 0; j < gamePiece[i].length; j++) {
+            if (gamePiece[i][j] === 1) {
+              if (!gameGridCopy[startingCoord[0] + i]) return false;
+              gameGridCopy[startingCoord[0] + i][startingCoord[1] + j] = 1;
+            }
+          }
+        }
+
+        return gameGridCopy;
+      } else {
+        resetGamePieces();
+      }
+    };
+
     const handleBlockMouseUp = (event: MouseEvent) => {
       if (blockClicked) {
         const gameGridCopy = placePieceOnGrid(
@@ -125,11 +142,9 @@ function App() {
     clickedShapeCoords,
     gameGrid,
     hiddenGamePieces,
+    cursorInGrid,
+    gamePieceDefaultPosition,
   ]);
-
-  useEffect(() => {
-    console.log("gameGrid", gameGrid);
-  }, [gameGrid]);
 
   return (
     <>
@@ -137,7 +152,8 @@ function App() {
         <GameGrid
           gameGrid={gameGrid}
           handleGridSquareEnter={handleGridSquareEnter}
-          handleGridSquareLeave={handleGridSquareLeave}
+          handleGridEnter={handleGridEnter}
+          handleGridLeave={handleGridLeave}
         />
 
         <ShapeContainer>
@@ -146,30 +162,35 @@ function App() {
             rotateGamePiece={rotateGamePiece}
             hiddenGamePieces={hiddenGamePieces}
             handleBlockClick={handleBlockClick}
+            position={gamePieceDefaultPosition}
           />
           <Shape
             type={T_PIECE}
             rotateGamePiece={rotateGamePiece}
             hiddenGamePieces={hiddenGamePieces}
             handleBlockClick={handleBlockClick}
+            position={gamePieceDefaultPosition}
           />
           <Shape
             type={ZIG_PIECE}
             rotateGamePiece={rotateGamePiece}
             hiddenGamePieces={hiddenGamePieces}
             handleBlockClick={handleBlockClick}
+            position={gamePieceDefaultPosition}
           />
           <Shape
             type={PLUS_PIECE}
             rotateGamePiece={rotateGamePiece}
             hiddenGamePieces={hiddenGamePieces}
             handleBlockClick={handleBlockClick}
+            position={gamePieceDefaultPosition}
           />
           <Shape
             type={SQUARE_PIECE}
             rotateGamePiece={rotateGamePiece}
             hiddenGamePieces={hiddenGamePieces}
             handleBlockClick={handleBlockClick}
+            position={gamePieceDefaultPosition}
           />
         </ShapeContainer>
       </div>

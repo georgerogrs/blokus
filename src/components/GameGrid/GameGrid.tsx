@@ -6,16 +6,18 @@ import GhostGridSquare from "./GhostGridSquare";
 interface GameGridProps {
   gameGrid: number[][] | undefined;
   handleGridSquareEnter: (coords: number[]) => void;
-  handleGridSquareLeave: (coords: number[]) => void;
+  handleGridEnter: () => void;
+  handleGridLeave: () => void;
 }
 
 const GameGrid = ({
   gameGrid,
   handleGridSquareEnter,
-  handleGridSquareLeave,
+  handleGridEnter,
+  handleGridLeave,
 }: GameGridProps) => {
   return (
-    <>
+    <div style={{ position: "relative", right: "20px", bottom: "15px" }}>
       <div
         className="m-3 border-black cursor-pointer"
         style={{ borderWidth: "1px" }}
@@ -44,6 +46,8 @@ const GameGrid = ({
       </div>
       <div
         style={{ position: "relative", top: "-826px", marginBottom: "-826px" }} // TODO: Fix this
+        onMouseEnter={handleGridEnter}
+        onMouseLeave={handleGridLeave}
       >
         {gameGrid?.map((row, rowIndex) => {
           return (
@@ -59,7 +63,6 @@ const GameGrid = ({
                     key={cellIndex}
                     coords={[rowIndex, cellIndex]}
                     handleGridSquareEnter={handleGridSquareEnter}
-                    handleGridSquareLeave={handleGridSquareLeave}
                   />
                 );
               })}
@@ -67,7 +70,7 @@ const GameGrid = ({
           );
         })}
       </div>
-    </>
+    </div>
   );
 };
 
