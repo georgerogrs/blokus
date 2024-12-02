@@ -1,13 +1,7 @@
 import { useArrayOperations } from "./useArrayOperations";
 
 export const useBoardOperations = () => {
-  const { arrayInArray } = useArrayOperations();
-
-  const withinMatrixBounds = (matrix: number[][], coordinates: number[]) => {
-    if (coordinates[0] < matrix.length && coordinates[1] < matrix[0].length) {
-      return true;
-    } else return false;
-  };
+  const { arrayInArray, withinMatrixBounds } = useArrayOperations();
 
   // Uses DFS to find all cells touching a clicked coordinate
   const findAllTouchingCells = (matrix: number[][], coords: number[]) => {

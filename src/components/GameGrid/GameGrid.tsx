@@ -6,9 +6,14 @@ import GhostGridSquare from "./GhostGridSquare";
 interface GameGridProps {
   gameGrid: number[][] | undefined;
   handleGridSquareEnter: (coords: number[]) => void;
+  handleGridSquareLeave: (coords: number[]) => void;
 }
 
-const GameGrid = ({ gameGrid, handleGridSquareEnter }: GameGridProps) => {
+const GameGrid = ({
+  gameGrid,
+  handleGridSquareEnter,
+  handleGridSquareLeave,
+}: GameGridProps) => {
   return (
     <>
       <div
@@ -54,6 +59,7 @@ const GameGrid = ({ gameGrid, handleGridSquareEnter }: GameGridProps) => {
                     key={cellIndex}
                     coords={[rowIndex, cellIndex]}
                     handleGridSquareEnter={handleGridSquareEnter}
+                    handleGridSquareLeave={handleGridSquareLeave}
                   />
                 );
               })}

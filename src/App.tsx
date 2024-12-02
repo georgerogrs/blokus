@@ -11,6 +11,7 @@ import {
   SQUARE_PIECE,
 } from "./gameSettings";
 import { useGamePieceOperations } from "./hooks/useGamePieceOperations";
+import { useArrayOperations } from "./hooks/useArrayOperations";
 
 const createGameGrid = (width: number, height: number) => {
   const grid = [];
@@ -25,6 +26,7 @@ const createGameGrid = (width: number, height: number) => {
 };
 
 function App() {
+  const { withinMatrixBounds } = useArrayOperations();
   const { rotateGamePiece } = useGamePieceOperations();
 
   const [gameGrid, setGameGrid] = useState<number[][]>(createGameGrid(20, 20));
@@ -38,6 +40,11 @@ function App() {
     if (coords) {
       setCurrentCoords(coords);
     }
+  };
+
+  const handleGridSquareLeave = (coords: number[]) => {
+    console.log("prevCoords", currentCoords);
+    console.log("coords", coords);
   };
 
   const placePieceOnGrid = (
@@ -78,27 +85,27 @@ function App() {
     setClickedShapeCoords(shapeCoords);
   };
 
-  const handleBlockMouseUp = (event: MouseEvent) => {
-    if (blockClicked) {
-      const gameGridCopy = placePieceOnGrid(
-        [...gameGrid],
-        currentCoords,
-        selectedGamePiece,
-        clickedShapeCoords
-      );
-      if (gameGridCopy) {
-        setGameGrid(gameGridCopy);
-
-        const hiddenGamePiecesCopy = [...hiddenGamePieces];
-        hiddenGamePiecesCopy.push(selectedGamePiece);
-        setHiddenGamePieces(hiddenGamePiecesCopy);
-      }
-
-      setBlockClicked(false);
-    }
-  };
-
   useEffect(() => {
+    const handleBlockMouseUp = (event: MouseEvent) => {
+      if (blockClicked) {
+        const gameGridCopy = placePieceOnGrid(
+          [...gameGrid],
+          currentCoords,
+          selectedGamePiece,
+          clickedShapeCoords
+        );
+        if (gameGridCopy) {
+          setGameGrid(gameGridCopy);
+
+          const hiddenGamePiecesCopy = [...hiddenGamePieces];
+          hiddenGamePiecesCopy.push(selectedGamePiece);
+          setHiddenGamePieces(hiddenGamePiecesCopy);
+        }
+
+        setBlockClicked(false);
+      }
+    };
+
     if (blockClicked) {
       // Add the mouseup event listener when block is clicked
       window.addEventListener("mouseup", handleBlockMouseUp);
@@ -111,7 +118,14 @@ function App() {
     return () => {
       window.removeEventListener("mouseup", handleBlockMouseUp);
     };
-  }, [blockClicked, selectedGamePiece, currentCoords, clickedShapeCoords]);
+  }, [
+    blockClicked,
+    selectedGamePiece,
+    currentCoords,
+    clickedShapeCoords,
+    gameGrid,
+    hiddenGamePieces,
+  ]);
 
   useEffect(() => {
     console.log("gameGrid", gameGrid);
@@ -123,6 +137,7 @@ function App() {
         <GameGrid
           gameGrid={gameGrid}
           handleGridSquareEnter={handleGridSquareEnter}
+          handleGridSquareLeave={handleGridSquareLeave}
         />
 
         <ShapeContainer>

@@ -21,5 +21,11 @@ export const useArrayOperations = () => {
     return isMatch;
   };
 
-  return { arrayInArray };
+  const withinMatrixBounds = (matrix: number[][], coordinates: number[]) => {
+    if (coordinates[0] < matrix.length && coordinates[1] < matrix[0].length) {
+      return true;
+    } else return false;
+  };
+
+  return { arrayInArray, withinMatrixBounds };
 };

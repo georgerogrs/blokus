@@ -4,11 +4,13 @@ import { BLOCK_SIZE, SELECT_BG_COLOR } from "../../gameSettings";
 interface GhostGridSquareProps {
   coords: number[];
   handleGridSquareEnter: (coords: number[]) => void;
+  handleGridSquareLeave: (coords: number[]) => void;
 }
 
 const GhostGridSquare = ({
   coords,
   handleGridSquareEnter,
+  handleGridSquareLeave,
 }: GhostGridSquareProps) => {
   return (
     <div
@@ -20,6 +22,7 @@ const GhostGridSquare = ({
         zIndex: 3,
       }}
       onMouseEnter={() => handleGridSquareEnter(coords)}
+      onMouseLeave={() => handleGridSquareLeave(coords)}
     />
   );
 };
