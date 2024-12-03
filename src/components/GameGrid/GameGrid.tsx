@@ -45,11 +45,10 @@ const GameGrid = ({
       </div>
       <div
         style={{
-          position: "relative",
-          bottom: 813,
-          left: 14,
-          marginBottom: -813,
-        }} // TODO: Fix this
+          position: "absolute",
+          top: 12,
+          left: 14.5,
+        }}
         onMouseEnter={handleGridEnter}
         onMouseLeave={handleGridLeave}
       >

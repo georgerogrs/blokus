@@ -12,6 +12,7 @@ import {
 } from "./gameSettings";
 import { useGamePieceOperations } from "./hooks/useGamePieceOperations";
 import { useArrayOperations } from "./hooks/useArrayOperations";
+import { useBoardOperations } from "./hooks/useBoardOperations";
 
 const createGameGrid = (width: number, height: number) => {
   const grid = [];
@@ -27,8 +28,9 @@ const createGameGrid = (width: number, height: number) => {
 
 function App() {
   const { rotateGamePiece } = useGamePieceOperations();
+  const { findAllTouchingCells } = useBoardOperations();
 
-  const [gameGrid, setGameGrid] = useState<number[][]>(createGameGrid(20, 20));
+  const [gameGrid, setGameGrid] = useState<number[][]>(createGameGrid(10, 10));
   const [selectedGamePiece, setSelectedGamePiece] = useState<number[][]>([]);
   const [hiddenGamePieces, setHiddenGamePieces] = useState<number[][][]>([]);
   const [currentCoords, setCurrentCoords] = useState<number[]>([]);
@@ -101,20 +103,83 @@ function App() {
       startingCoord: number[]
     ) => {
       if (
-        (startingCoord[0] === gameGrid.length - gameGrid.length &&
-          startingCoord[1] === 0) || // Starting coords
-        !(gamePiece[gamePiece.length - 1][0] === 1) // Corner of game piece is not filled
+        startingCoord[0] === gameGrid.length - gamePiece.length &&
+        startingCoord[1] === 0 && // Starting coords
+        gamePiece[gamePiece.length - 1][0] === 1 // Corner of game piece is  filled
       ) {
-        return false;
+        return true;
       }
+      return false;
+    };
+
+    const sortMatrix = (matrix: number[][]) => {
+      for (let i = 0; i < matrix.length; i++) {
+        matrix.sort((a, b) => a[i] - b[i]);
+      }
+      return matrix;
+    };
+
+    const compareMatrices = (matrixA: number[][], matrixB: number[][]) => {
+      // Sort matrices
+      const sortedMatrixA = sortMatrix([...matrixA]);
+      const sortedMatrixB = sortMatrix([...matrixB]);
+
+      for (let i = 0; i < sortedMatrixA.length; i++) {
+        for (let j = 0; j < sortedMatrixA[i].length; j++) {
+          if (sortedMatrixB[i][j] !== sortedMatrixA[i][j]) {
+            return false;
+          }
+        }
+      }
+
       return true;
     };
 
-    const checkValidPlacement = (
-      gameGrid: number[][],
-      gamePiece: number[][],
-      startingCoord: number[]
-    ) => {};
+    const getNumberOfShapesOnBoard = (gameGrid: number[][]) => {
+      const piecesOnBoard: number[][][] = [];
+
+      for (let i = 0; i < gameGrid.length; i++) {
+        for (let j = 0; j < gameGrid[0].length; j++) {
+          if (gameGrid[i][j] === 1) {
+            const touchingCells = findAllTouchingCells(gameGrid, [i, j]);
+
+            let pieceAccountedFor = false;
+            for (let k = 0; k < piecesOnBoard.length; k++) {
+              if (compareMatrices(piecesOnBoard[k], touchingCells)) {
+                pieceAccountedFor = true;
+              }
+            }
+            if (!pieceAccountedFor) piecesOnBoard.push(touchingCells);
+          }
+        }
+      }
+
+      return piecesOnBoard.length;
+    };
+
+    const findGapsInGridRows = (gameGrid: number[][]) => {
+      let prevRowFilled = true;
+      for (let i = gameGrid.length - 1; i >= 0; i--) {
+        const rowFilled = gameGrid[i].some((cell) => cell === 1);
+        if (!prevRowFilled && rowFilled) return true;
+        prevRowFilled = rowFilled;
+      }
+      return false;
+    };
+
+    const findGapsInGridColumns = (gameGrid: number[][]) => {
+      const ThreeSixtyRotatedGameGrid = rotateGamePiece(
+        rotateGamePiece(rotateGamePiece(gameGrid))
+      );
+      return findGapsInGridRows(ThreeSixtyRotatedGameGrid);
+    };
+
+    const findGapsInGrid = (gameGrid: number[][]) => {
+      const gapsInRows = findGapsInGridRows(gameGrid);
+      const gapsInColumns = findGapsInGridColumns(gameGrid);
+
+      return gapsInRows || gapsInColumns;
+    };
 
     const placePieceOnGrid = (
       gameGridCopy: number[][],
@@ -135,8 +200,6 @@ function App() {
         !isNaN(startingCoord[1]) &&
         cursorInGrid
       ) {
-        // TODO: Check is able to go on game grid
-
         const startingTurn = checkGameGridEmpty(gameGrid);
         if (startingTurn) {
           const validStartingPoint = checkValidStartingCoords(
@@ -167,7 +230,16 @@ function App() {
         }
 
         if (!startingTurn) {
-          checkValidPlacement(gameGridCopy, gamePiece, startingCoord);
+          const amountOfShapes = getNumberOfShapesOnBoard(gameGridCopy);
+          if (amountOfShapes !== hiddenGamePieces.length + 1) {
+            resetGamePieces();
+            return;
+          }
+
+          if (findGapsInGrid(gameGridCopy)) {
+            resetGamePieces();
+            return;
+          }
         }
 
         const updatedScore = score + scoreToAdd;
@@ -235,7 +307,7 @@ function App() {
   return (
     <>
       <div className="h-screen w-screen flex flex-col justify-center items-center">
-        <text style={{ color: "white", fontSize: 20 }}>Score: {score}</text>
+        <h6 style={{ color: "white", fontSize: 20 }}>Score: {score}</h6>
         <GameGrid
           gameGrid={gameGrid}
           handleGridSquareEnter={handleGridSquareEnter}

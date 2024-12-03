@@ -3,21 +3,27 @@ import { useArrayOperations } from "./useArrayOperations";
 export const useBoardOperations = () => {
   const { arrayInArray, withinMatrixBounds } = useArrayOperations();
 
-  // Uses DFS to find all cells touching a clicked coordinate
-  const findAllTouchingCells = (matrix: number[][], coords: number[]) => {
+  const findAllTouchingCells = (
+    matrix: number[][],
+    coords: number[]
+  ): number[][] => {
     const coordValue = matrix[coords[0]][coords[1]]; // Find coord value on matrix
 
-    if (coordValue === 2) {
-      // If valid
-      const visited = [];
-      const stack = [];
-      const memory = []; // Holds all unique coords visited
+    if (coordValue !== 1) {
+      // If the starting coordinate does not contain a 1, return an empty array
+      return [];
+    }
 
-      stack.push(coords); // Add first coordinate to stack
+    const visited: number[][] = [];
+    const stack: number[][] = [];
+    const memory: number[][] = []; // Holds all unique coords visited
 
-      while (stack.length > 0) {
-        const center: number[] = stack[stack.length - 1]; // Current center is top of stack
+    stack.push(coords); // Add first coordinate to stack
 
+    while (stack.length > 0) {
+      const center: number[] = stack.pop()!; // Current center is top of stack
+
+      if (!arrayInArray(visited, center)) {
         visited.push(center); // Add center to list of visited coords
 
         // Get right coord
@@ -29,45 +35,26 @@ export const useBoardOperations = () => {
         // Get down coord
         const downCoord = [center[0] + 1, center[1]];
 
-        if (
-          withinMatrixBounds(matrix, rightCoord) && // Check coordinate is within matrix bounds
-          !!matrix[rightCoord[0]] &&
-          !!matrix[rightCoord[0]][rightCoord[1]] &&
-          !arrayInArray(visited, rightCoord) // Check coordinate has not been visited
-        ) {
-          stack.push(rightCoord); // Push coordinate to stack to be accessed next
-        } else if (
-          withinMatrixBounds(matrix, leftCoord) && // Check coordinate is within matrix bounds
-          !!matrix[leftCoord[0]] &&
-          !!matrix[leftCoord[0]][leftCoord[1]] &&
-          !arrayInArray(visited, leftCoord) // Check coordinate has not been visited
-        ) {
-          stack.push(leftCoord); // Push coordinate to stack to be accessed next
-        } else if (
-          withinMatrixBounds(matrix, upCoord) && // Check coordinate is within matrix bounds
-          !!matrix[upCoord[0]] &&
-          !!matrix[upCoord[0]][upCoord[1]] &&
-          !arrayInArray(visited, upCoord) // Check coordinate has not been visited
-        ) {
-          stack.push(upCoord); // Push coordinate to stack to be accessed next
-        } else if (
-          withinMatrixBounds(matrix, downCoord) && // Check coordinate is within matrix bounds
-          !!matrix[downCoord[0]] &&
-          !!matrix[downCoord[0]][downCoord[1]] &&
-          !arrayInArray(visited, downCoord) // Check coordinate has not been visited
-        ) {
-          stack.push(downCoord); // Push coordinate to stack to be accessed next
-        } else {
-          stack.pop(); // No unvisited touching coords -> pop off stack
+        // Check all directions and push valid ones to stack
+        const directions = [rightCoord, leftCoord, upCoord, downCoord];
+        for (let direction of directions) {
+          if (
+            withinMatrixBounds(matrix, direction) && // Check coordinate is within matrix bounds
+            matrix[direction[0]]?.[direction[1]] === 1 && // Ensure the value at the coordinate is 1
+            !arrayInArray(visited, direction) // Ensure the coordinate has not been visited
+          ) {
+            stack.push(direction); // Push coordinate to stack to be accessed next
+          }
         }
 
+        // Add coord to memory if not already present
         if (!arrayInArray(memory, center)) {
-          memory.push(center); // Add coord to memory
+          memory.push(center);
         }
       }
-
-      return memory;
     }
+
+    return memory; // Return all the collected coordinates
   };
 
   const findInitialCorners = (gameGrid: number[][], gamePiece: number[][]) => {
