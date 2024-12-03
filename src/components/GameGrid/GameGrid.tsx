@@ -17,7 +17,7 @@ const GameGrid = ({
   handleGridLeave,
 }: GameGridProps) => {
   return (
-    <div style={{ position: "relative", right: "20px", bottom: "15px" }}>
+    <div style={{ position: "relative" }}>
       <div
         className="m-3 border-black cursor-pointer"
         style={{ borderWidth: "1px" }}
@@ -29,9 +29,8 @@ const GameGrid = ({
                 let backgroundColor = "transparent";
                 if (cell === 1) {
                   backgroundColor = "red";
-                }
-                if (cell === 2) {
-                  backgroundColor = SELECT_BG_COLOR;
+                } else if (cell == 2) {
+                  backgroundColor = "yellow";
                 }
                 return (
                   <GridSquare
@@ -45,7 +44,12 @@ const GameGrid = ({
         })}
       </div>
       <div
-        style={{ position: "relative", top: "-826px", marginBottom: "-826px" }} // TODO: Fix this
+        style={{
+          position: "relative",
+          bottom: 813,
+          left: 14,
+          marginBottom: -813,
+        }} // TODO: Fix this
         onMouseEnter={handleGridEnter}
         onMouseLeave={handleGridLeave}
       >
