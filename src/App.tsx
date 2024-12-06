@@ -3,16 +3,10 @@ import "./App.css";
 import GameGrid from "./components/GameGrid";
 import Shape from "./components/Shape";
 import ShapeContainer from "./components/ShapeContainer";
-import {
-  L_PIECE,
-  T_PIECE,
-  ZIG_PIECE,
-  PLUS_PIECE,
-  SQUARE_PIECE,
-} from "./gameSettings";
 import { useGamePieceOperations } from "./hooks/useGamePieceOperations";
 import { useArrayOperations } from "./hooks/useArrayOperations";
 import { useBoardOperations } from "./hooks/useBoardOperations";
+import { SHAPES } from "./shapes";
 
 const createGameGrid = (width: number, height: number) => {
   const grid = [];
@@ -29,8 +23,9 @@ const createGameGrid = (width: number, height: number) => {
 function App() {
   const { rotateGamePiece } = useGamePieceOperations();
   const { findAllTouchingCells } = useBoardOperations();
+  const { withinMatrixBounds, arrayInArray } = useArrayOperations();
 
-  const [gameGrid, setGameGrid] = useState<number[][]>(createGameGrid(10, 10));
+  const [gameGrid, setGameGrid] = useState<number[][]>(createGameGrid(20, 20));
   const [selectedGamePiece, setSelectedGamePiece] = useState<number[][]>([]);
   const [hiddenGamePieces, setHiddenGamePieces] = useState<number[][][]>([]);
   const [currentCoords, setCurrentCoords] = useState<number[]>([]);
@@ -181,6 +176,61 @@ function App() {
       return gapsInRows || gapsInColumns;
     };
 
+    const getCoordDiagonals = (coord: number[]) => {
+      const upperLeft: number[] = [coord[0] - 1, coord[1] - 1];
+      const upperRight: number[] = [coord[0] - 1, coord[1] + 1];
+      const lowerLeft: number[] = [coord[0] + 1, coord[1] - 1];
+      const lowerRight: number[] = [coord[0] + 1, coord[1] + 1];
+
+      return [upperLeft, upperRight, lowerLeft, lowerRight];
+    };
+
+    const traceGameGrid = (gameGrid: number[][], startingCoord: number[]) => {
+      const visitedCells = findAllTouchingCells(gameGrid, startingCoord);
+
+      let finalRun = false;
+      while (!finalRun) {
+        finalRun = true;
+        visitedCells.forEach((coord) => {
+          const coordDiagonals = getCoordDiagonals(coord);
+          const additionalCoords = coordDiagonals.filter((coord) => {
+            if (
+              coord[0] > 0 &&
+              coord[1] > 0 &&
+              withinMatrixBounds(gameGrid, coord)
+            ) {
+              if (
+                !arrayInArray(visitedCells, coord) &&
+                gameGrid[coord[0]][coord[1]] === 1
+              ) {
+                findAllTouchingCells(gameGrid, coord).forEach((coord) =>
+                  visitedCells.push(coord)
+                );
+                return coord;
+              }
+            }
+          });
+          if (additionalCoords.length > 0) finalRun = false;
+        });
+      }
+
+      return visitedCells;
+    };
+
+    const checkCorrectPlacement = (
+      gameGrid: number[][],
+      coords: number[][]
+    ) => {
+      for (let i = 0; i < gameGrid.length; i++) {
+        for (let j = 0; j < gameGrid[0].length; j++) {
+          if (gameGrid[i][j] === 1 && !arrayInArray(coords, [i, j])) {
+            return false;
+          }
+        }
+      }
+      return true;
+    };
+
     const placePieceOnGrid = (
       gameGridCopy: number[][],
       coordsOnGrid: number[],
@@ -240,6 +290,16 @@ function App() {
             resetGamePieces();
             return;
           }
+
+          const tracedCoords = traceGameGrid(gameGridCopy, [
+            gameGridCopy.length - 1,
+            0,
+          ]);
+
+          if (!checkCorrectPlacement(gameGridCopy, tracedCoords)) {
+            resetGamePieces();
+            return;
+          }
         }
 
         const updatedScore = score + scoreToAdd;
@@ -261,7 +321,7 @@ function App() {
 
     const handleBlockMouseUp = (event: MouseEvent) => {
       if (blockClicked) {
-        const gameGridCopy = gameGrid.map((row) => [...row]);
+        const gameGridCopy = deepCopyMatrix(gameGrid);
         const updatedGameGrid = placePieceOnGrid(
           gameGridCopy,
           currentCoords,
@@ -316,41 +376,18 @@ function App() {
         />
 
         <ShapeContainer>
-          <Shape
-            type={L_PIECE}
-            rotateGamePiece={rotateGamePiece}
-            hiddenGamePieces={hiddenGamePieces}
-            handleBlockClick={handleBlockClick}
-            position={gamePieceDefaultPosition}
-          />
-          <Shape
-            type={T_PIECE}
-            rotateGamePiece={rotateGamePiece}
-            hiddenGamePieces={hiddenGamePieces}
-            handleBlockClick={handleBlockClick}
-            position={gamePieceDefaultPosition}
-          />
-          <Shape
-            type={ZIG_PIECE}
-            rotateGamePiece={rotateGamePiece}
-            hiddenGamePieces={hiddenGamePieces}
-            handleBlockClick={handleBlockClick}
-            position={gamePieceDefaultPosition}
-          />
-          <Shape
-            type={PLUS_PIECE}
-            rotateGamePiece={rotateGamePiece}
-            hiddenGamePieces={hiddenGamePieces}
-            handleBlockClick={handleBlockClick}
-            position={gamePieceDefaultPosition}
-          />
-          <Shape
-            type={SQUARE_PIECE}
-            rotateGamePiece={rotateGamePiece}
-            hiddenGamePieces={hiddenGamePieces}
-            handleBlockClick={handleBlockClick}
-            position={gamePieceDefaultPosition}
-          />
+          {Object.entries(SHAPES).map(([name, shapeType]) => (
+            <div style={{ margin: 20 }}>
+              <Shape
+                key={name}
+                type={shapeType}
+                rotateGamePiece={rotateGamePiece}
+                hiddenGamePieces={hiddenGamePieces}
+                handleBlockClick={handleBlockClick}
+                position={gamePieceDefaultPosition}
+              />
+            </div>
+          ))}
         </ShapeContainer>
       </div>
     </>
