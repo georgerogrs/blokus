@@ -1,5 +1,5 @@
 import React from "react";
-import { BLOCK_SIZE } from "../../gameSettings";
+import { BLOCK_SIZE } from "../../utils/gameSettings";
 
 const EmptyBlock = () => {
   return (

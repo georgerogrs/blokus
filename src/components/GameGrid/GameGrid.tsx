@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import GridSquare from "./GridSquare";
-import { SELECT_BG_COLOR } from "../../gameSettings";
+import { SELECT_BG_COLOR } from "../../utils/gameSettings";
 import GhostGridSquare from "./GhostGridSquare";
 
 interface GameGridProps {

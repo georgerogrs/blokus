@@ -38,10 +38,34 @@ export const SHAPES = {
     [0, 1, 0],
   ],
 
+  T_SMALL_PIECE: [
+    [1, 1, 1],
+    [0, 1, 0],
+  ],
+
   ZIG_PIECE: [
     [1, 0, 0],
     [1, 1, 0],
     [0, 1, 1],
+  ],
+
+  ZIG_LARGE_PIECE: [
+    [1, 1, 0],
+    [0, 1, 0],
+    [0, 1, 0],
+    [0, 1, 1],
+  ],
+
+  P_PIECE: [
+    [1, 1],
+    [1, 1],
+    [1, 0],
+  ],
+
+  F_PIECE: [
+    [0, 1, 1],
+    [1, 1, 0],
+    [0, 1, 0],
   ],
 
   PLUS_PIECE: [
@@ -63,6 +87,12 @@ export const SHAPES = {
   SINGLE_PIECE: [[1]],
 
   DUAL_PIECE: [[1, 1]],
+
+  THREE_PIECE: [[1, 1, 1]],
+
+  FOUR_PIECE: [[1, 1, 1, 1]],
+
+  FIVE_PIECE: [[1, 1, 1, 1, 1]],
 
   BENCH_PIECE: [
     [1, 1, 1],

@@ -1,5 +1,5 @@
 import React from "react";
-import { BLOCK_SIZE, SELECT_BG_COLOR } from "../../gameSettings";
+import { BLOCK_SIZE, SELECT_BG_COLOR } from "../../utils/gameSettings";
 
 interface GhostGridSquareProps {
   coords: number[];

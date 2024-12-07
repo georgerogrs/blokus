@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Block from "../Block";
 import EmptyBlock from "../Block/EmptyBlock";
 import Draggable from "react-draggable";
