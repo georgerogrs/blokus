@@ -89,30 +89,29 @@ export const useBoardLogic = () => {
   const traceGameGrid = (gameGrid: number[][], startingCoord: number[]) => {
     const visitedCells = findAllTouchingCells(gameGrid, startingCoord);
 
-    let finalRun = false;
-    while (!finalRun) {
-      finalRun = true;
-      visitedCells.forEach((coord) => {
+    let hasNewCells = true;
+    while (hasNewCells) {
+      hasNewCells = false;
+      for (let i = 0; i < visitedCells.length; i++) {
+        const coord = visitedCells[i];
         const coordDiagonals = getCoordDiagonals(coord);
-        const additionalCoords = coordDiagonals.filter((coord) => {
+        for (const diagonal of coordDiagonals) {
           if (
-            coord[0] > 0 &&
-            coord[1] > 0 &&
-            withinMatrixBounds(gameGrid, coord)
+            diagonal[0] >= 0 &&
+            diagonal[1] >= 0 &&
+            withinMatrixBounds(gameGrid, diagonal)
           ) {
             if (
-              !arrayInMatrix(visitedCells, coord) &&
-              gameGrid[coord[0]][coord[1]] === 1
+              !arrayInMatrix(visitedCells, diagonal) &&
+              gameGrid[diagonal[0]][diagonal[1]] === 1
             ) {
-              findAllTouchingCells(gameGrid, coord).forEach((coord) =>
-                visitedCells.push(coord)
-              );
-              return coord;
+              const newCells = findAllTouchingCells(gameGrid, diagonal);
+              newCells.forEach((cell) => visitedCells.push(cell));
+              hasNewCells = true;
             }
           }
-        });
-        if (additionalCoords.length > 0) finalRun = false;
-      });
+        }
+      }
     }
 
     return visitedCells;

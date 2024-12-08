@@ -15,7 +15,7 @@ export const useBoardState = () => {
   } = useBoardLogic();
 
   const [gameGrid, setGameGrid] = useState<number[][]>(
-    createEmptyMatrix(20, 20)
+    createEmptyMatrix(15, 15)
   );
   const [score, setScore] = useState<number>(0);
   const [hiddenGamePieces, setHiddenGamePieces] = useState<number[][][]>([]);
