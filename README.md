@@ -1,7 +1,6 @@
-<img width="50" src="https://github.com/user-attachments/assets/d74a89bd-8a48-4825-8083-8405f38ed7ec" />
+<img width="65" src="https://github.com/user-attachments/assets/d74a89bd-8a48-4825-8083-8405f38ed7ec" />
 
-# Blokus Board Game
-
+# Blokus Board Game 
 The board game: Blokus built in React.js.
 * Starting from a corner, select number of players and take turns to place shapes on a grid.
 * Subsequent shapes must be placed at a diagonal to already placed pieces and shapes cannot touch or overlap.
