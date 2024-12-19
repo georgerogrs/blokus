@@ -55,6 +55,7 @@ const Shape = ({
       handle=".handle"
       scale={1}
       disabled={disableDraggable}
+      grid={[6, 6]}
     >
       <div className="handle">
         {!hideShape && (
