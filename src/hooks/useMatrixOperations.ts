@@ -4,7 +4,7 @@ export const useMatrixOperations = () => {
     if (a === null || b === null) return false;
     if (a.length !== b.length) return false;
 
-    for (var i = 0; i < a.length; ++i) {
+    for (let i = 0; i < a.length; ++i) {
       if (a[i] !== b[i]) return false;
     }
     return true;
@@ -31,11 +31,12 @@ export const useMatrixOperations = () => {
 
   const findAllTouchingCells = (
     matrix: number[][],
-    coords: number[]
+    coords: number[],
+    number: number
   ): number[][] => {
     const coordValue = matrix[coords[0]][coords[1]]; // Find coord value on matrix
 
-    if (coordValue !== 1) {
+    if (coordValue !== number) {
       // If the starting coordinate does not contain a 1, return an empty array
       return [];
     }
@@ -66,7 +67,7 @@ export const useMatrixOperations = () => {
         for (let direction of directions) {
           if (
             withinMatrixBounds(matrix, direction) && // Check coordinate is within matrix bounds
-            matrix[direction[0]]?.[direction[1]] === 1 && // Ensure the value at the coordinate is 1
+            matrix[direction[0]]?.[direction[1]] === number && // Ensure the value at the coordinate is the same as number
             !arrayInMatrix(visited, direction) // Ensure the coordinate has not been visited
           ) {
             stack.push(direction); // Push coordinate to stack to be accessed next

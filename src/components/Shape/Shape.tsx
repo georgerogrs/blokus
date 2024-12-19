@@ -1,25 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Block from "../Block";
 import EmptyBlock from "../Block/EmptyBlock";
 import Draggable from "react-draggable";
+import { usePieceLogic } from "../../hooks/usePieceLogic";
+import { IPlayersState } from "../../hooks/useBoardState";
 
 interface ShapeProps {
   type: number[][];
-  hiddenGamePieces: number[][][];
+  playerNumber: number;
+  playersState: IPlayersState;
   position: { x: number; y: number };
-  color: string;
-  rotateGamePiece: (gamePiece: number[][]) => number[][];
   handleBlockClick: (gamePiece: number[][], shapeCoords: number[]) => void;
 }
 
 const Shape = ({
   type,
-  hiddenGamePieces,
+  playerNumber,
+  playersState,
   position,
-  color,
-  rotateGamePiece,
   handleBlockClick,
 }: ShapeProps) => {
+  const { rotateGamePiece } = usePieceLogic();
   const [gamePiece, setGamePiece] = useState<number[][]>(type);
   const [degrees, setDegrees] = useState<number>(0);
   const [transitionTime, setTransitionTime] = useState<number>(1);
@@ -44,7 +45,9 @@ const Shape = ({
     setDisableDraggable(true);
   };
 
-  const hideShape = hiddenGamePieces.includes(gamePiece) ? true : false;
+  const hideShape = playersState[playerNumber].playedShapes.includes(gamePiece)
+    ? true
+    : false;
 
   return (
     <Draggable
@@ -76,7 +79,7 @@ const Shape = ({
                           key={cellIndex}
                           gamePiece={gamePiece}
                           shapeCoords={[rowIndex, cellIndex]}
-                          color={color}
+                          playerNumber={playerNumber}
                           onBlockEnter={onBlockEnter}
                           onBlockLeave={onBlockLeave}
                           handleBlockClick={handleBlockClick}

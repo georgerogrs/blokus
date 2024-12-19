@@ -18,7 +18,11 @@ export const useBoardLogic = () => {
     for (let i = 0; i < gameGrid.length; i++) {
       for (let j = 0; j < gameGrid[0].length; j++) {
         if (gameGrid[i][j] === currentPlayer) {
-          const touchingCells = findAllTouchingCells(gameGrid, [i, j]);
+          const touchingCells = findAllTouchingCells(
+            gameGrid,
+            [i, j],
+            currentPlayer
+          );
 
           let pieceAccountedFor = false;
           for (let k = 0; k < piecesOnBoard.length; k++) {
@@ -86,8 +90,16 @@ export const useBoardLogic = () => {
     return score;
   };
 
-  const traceGameGrid = (gameGrid: number[][], startingCoord: number[]) => {
-    const visitedCells = findAllTouchingCells(gameGrid, startingCoord);
+  const traceGameGrid = (
+    gameGrid: number[][],
+    startingCoord: number[],
+    currentPlayer: number
+  ) => {
+    const visitedCells = findAllTouchingCells(
+      gameGrid,
+      startingCoord,
+      currentPlayer
+    );
 
     let finalRun = false;
     while (!finalRun) {
@@ -103,10 +115,10 @@ export const useBoardLogic = () => {
           ) {
             if (
               !arrayInMatrix(visitedCells, coord) &&
-              gameGrid[coord[0]][coord[1]] === 1
+              gameGrid[coord[0]][coord[1]] === currentPlayer
             ) {
-              findAllTouchingCells(gameGrid, coord).forEach((coord) =>
-                visitedCells.push(coord)
+              findAllTouchingCells(gameGrid, coord, currentPlayer).forEach(
+                (coord) => visitedCells.push(coord)
               );
               return coord;
             }
@@ -121,11 +133,15 @@ export const useBoardLogic = () => {
 
   const checkCorrectPlacementOnBoard = (
     gameGrid: number[][],
-    coords: number[][]
+    coords: number[][],
+    currentPlayer: number
   ) => {
     for (let i = 0; i < gameGrid.length; i++) {
       for (let j = 0; j < gameGrid[0].length; j++) {
-        if (gameGrid[i][j] === 1 && !arrayInMatrix(coords, [i, j])) {
+        if (
+          gameGrid[i][j] === currentPlayer &&
+          !arrayInMatrix(coords, [i, j])
+        ) {
           return false;
         }
       }

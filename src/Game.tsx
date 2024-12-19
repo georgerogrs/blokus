@@ -13,9 +13,8 @@ const Game = () => {
   const {
     gameGrid,
     updateGameGrid,
-    userScores,
-    updateUserScore,
-    hiddenGamePieces,
+    playersState,
+    updatePlayerScore,
     hideGamePiece,
     shapePosition,
     updateCursorInGrid,
@@ -79,15 +78,15 @@ const Game = () => {
           currentCoords,
           selectedGamePiece,
           clickedShapeCoords,
-          userScores[currentPlayer],
+          playersState[currentPlayer].score,
           currentPlayer
         );
 
         // updatedGameGrid not null -> place piece success
         if (!!updatedGameGrid) {
-          updateUserScore(currentPlayer, updatedScore); // Update score
+          updatePlayerScore(updatedScore, currentPlayer); // Update score
           updateGameGrid(rotateGamePiece(updatedGameGrid)); // Update gameGrid
-          hideGamePiece(selectedGamePiece); // Hide placed piece
+          hideGamePiece(selectedGamePiece, currentPlayer); // Hide placed piece
           changeTurn();
         }
 
@@ -109,24 +108,20 @@ const Game = () => {
     };
   }, [
     blockClicked,
-    gameGrid,
-    currentCoords,
-    selectedGamePiece,
+    changeTurn,
     clickedShapeCoords,
+    currentCoords,
     currentPlayer,
-    userScores,
     deepCopyMatrix,
+    gameGrid,
     hideGamePiece,
     placePieceOnGrid,
-    updateGameGrid,
+    playersState,
     rotateGamePiece,
-    changeTurn,
-    updateUserScore,
+    selectedGamePiece,
+    updateGameGrid,
+    updatePlayerScore,
   ]);
-
-  useEffect(() => {
-    console.log("userScores:", userScores);
-  }, [userScores]);
 
   return (
     <>
@@ -138,63 +133,22 @@ const Game = () => {
           handleGridLeave={handleGridLeave}
         />
         <h6 style={{ color: "white", fontSize: 20, marginBlock: 10 }}>
-          Score: {userScores[currentPlayer]}
+          Score: {playersState[currentPlayer].score}
         </h6>
       </div>
 
       <ShapeContainer>
-        {currentPlayer === 1 &&
-          Object.entries(SHAPES).map(([name, gamePiece]) => (
-            <div key={name} style={{ margin: 20 }}>
-              <Shape
-                type={randomRotatePiece(gamePiece)}
-                rotateGamePiece={rotateGamePiece}
-                hiddenGamePieces={hiddenGamePieces}
-                handleBlockClick={handleBlockClick}
-                position={shapePosition}
-                color={"red"}
-              />
-            </div>
-          ))}
-        {currentPlayer === 2 &&
-          Object.entries(SHAPES).map(([name, gamePiece]) => (
-            <div key={name} style={{ margin: 20 }}>
-              <Shape
-                type={randomRotatePiece(gamePiece)}
-                rotateGamePiece={rotateGamePiece}
-                hiddenGamePieces={hiddenGamePieces}
-                handleBlockClick={handleBlockClick}
-                position={shapePosition}
-                color={"blue"}
-              />
-            </div>
-          ))}
-        {currentPlayer === 3 &&
-          Object.entries(SHAPES).map(([name, gamePiece]) => (
-            <div key={name} style={{ margin: 20 }}>
-              <Shape
-                type={randomRotatePiece(gamePiece)}
-                rotateGamePiece={rotateGamePiece}
-                hiddenGamePieces={hiddenGamePieces}
-                handleBlockClick={handleBlockClick}
-                position={shapePosition}
-                color={"green"}
-              />
-            </div>
-          ))}
-        {currentPlayer === 4 &&
-          Object.entries(SHAPES).map(([name, gamePiece]) => (
-            <div key={name} style={{ margin: 20 }}>
-              <Shape
-                type={randomRotatePiece(gamePiece)}
-                rotateGamePiece={rotateGamePiece}
-                hiddenGamePieces={hiddenGamePieces}
-                handleBlockClick={handleBlockClick}
-                position={shapePosition}
-                color={"yellow"}
-              />
-            </div>
-          ))}
+        {Object.entries(SHAPES).map(([name, gamePiece]) => (
+          <div key={name} style={{ margin: 20 }}>
+            <Shape
+              type={randomRotatePiece(gamePiece)}
+              playerNumber={currentPlayer}
+              playersState={playersState}
+              handleBlockClick={handleBlockClick}
+              position={shapePosition}
+            />
+          </div>
+        ))}
       </ShapeContainer>
     </>
   );

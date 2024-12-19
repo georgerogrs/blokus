@@ -3,8 +3,8 @@ import { useMatrixOperations } from "./useMatrixOperations";
 import { initialShapePosition } from "../utils/constants";
 import { useBoardLogic } from "./useBoardLogic";
 
-interface IUserScores {
-  [key: number]: number;
+export interface IPlayersState {
+  [key: number]: { score: number; playedShapes: number[][][] };
 }
 
 export const useBoardState = () => {
@@ -12,7 +12,6 @@ export const useBoardState = () => {
   const {
     countShapesOnGrid,
     checkStartingCoords,
-    findGapsInGrid,
     traceGameGrid,
     checkCorrectPlacementOnBoard,
     countScoreOnGrid,
@@ -21,13 +20,12 @@ export const useBoardState = () => {
   const [gameGrid, setGameGrid] = useState<number[][]>(
     createEmptyMatrix(20, 20)
   );
-  const [userScores, setUserScores] = useState<IUserScores>({
-    1: 0,
-    2: 0,
-    3: 0,
-    4: 0,
+  const [playersState, setPlayersState] = useState<IPlayersState>({
+    1: { score: 0, playedShapes: [] },
+    2: { score: 0, playedShapes: [] },
+    3: { score: 0, playedShapes: [] },
+    4: { score: 0, playedShapes: [] },
   });
-  const [hiddenGamePieces, setHiddenGamePieces] = useState<number[][][]>([]);
   const [shapePosition, setShapePosition] = useState(initialShapePosition);
   const [cursorInGrid, setCursorInGrid] = useState<boolean>(false);
   const [currentCoords, setCurrentCoords] = useState<number[]>([]);
@@ -35,14 +33,20 @@ export const useBoardState = () => {
 
   const updateGameGrid = (newGrid: number[][]) => setGameGrid(newGrid);
 
-  const updateUserScore = (user: number, newScore: number) => {
-    const userScoresCopy = { ...userScores };
-    userScoresCopy[user] = newScore;
-    setUserScores(userScoresCopy);
+  const updatePlayerScore = (newScore: number, playerNumber: number) => {
+    const playersStateCopy = { ...playersState };
+    playersStateCopy[playerNumber].score = newScore;
+    setPlayersState(playersStateCopy);
   };
 
-  const hideGamePiece = (gamePiece: number[][]) => {
-    setHiddenGamePieces([...hiddenGamePieces, gamePiece]);
+  const hideGamePiece = (gamePiece: number[][], playerNumber: number) => {
+    const playersStateCopy = { ...playersState };
+    const playerPlayedShapesCopy = [
+      ...playersStateCopy[playerNumber].playedShapes,
+    ];
+    playerPlayedShapesCopy.push(gamePiece);
+    playersStateCopy[playerNumber].playedShapes = playerPlayedShapesCopy;
+    setPlayersState(playersStateCopy);
   };
 
   const resetShapePosition = () => {
@@ -105,27 +109,29 @@ export const useBoardState = () => {
       }
 
       if (!startingTurn) {
-        console.log("Not starting turn");
-
         const amountOfShapes = countShapesOnGrid(gameGridCopy, currentPlayer);
-        if (amountOfShapes !== hiddenGamePieces.length + 1) {
-          console.log("Mismatch in shapes on grid");
+        if (
+          amountOfShapes !==
+          playersState[currentPlayer].playedShapes.length + 1
+        ) {
           resetShapePosition();
           return { updatedGameGrid: null, updatedScore: null };
         }
 
-        // if (findGapsInGrid(gameGridCopy)) {
-        //   resetShapePosition();
-        //   return { updatedGameGrid: null, updatedScore: null };
-        // }
+        const startingCoord = [gameGridCopy.length - 1, 0];
+        const tracedCoords = traceGameGrid(
+          gameGridCopy,
+          startingCoord,
+          currentPlayer
+        );
 
-        const tracedCoords = traceGameGrid(gameGridCopy, [
-          gameGridCopy.length - 1,
-          0,
-        ]);
-
-        if (!checkCorrectPlacementOnBoard(gameGridCopy, tracedCoords)) {
-          console.log("Incorrect placement on board");
+        if (
+          !checkCorrectPlacementOnBoard(
+            gameGridCopy,
+            tracedCoords,
+            currentPlayer
+          )
+        ) {
           resetShapePosition();
           return { updatedGameGrid: null, updatedScore: null };
         }
@@ -136,7 +142,6 @@ export const useBoardState = () => {
       const newScore = countScoreOnGrid(gameGridCopy, currentPlayer);
 
       if (newScore !== updatedScore) {
-        console.log("Scores mismatch");
         resetShapePosition();
         return { updatedGameGrid: null, updatedScore: null };
       }
@@ -151,9 +156,8 @@ export const useBoardState = () => {
   return {
     gameGrid,
     updateGameGrid,
-    userScores,
-    updateUserScore,
-    hiddenGamePieces,
+    playersState,
+    updatePlayerScore,
     hideGamePiece,
     shapePosition,
     resetShapePosition,

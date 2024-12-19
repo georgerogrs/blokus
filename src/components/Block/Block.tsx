@@ -4,7 +4,7 @@ import { BLOCK_SIZE } from "../../utils/gameSettings";
 interface Props {
   gamePiece: number[][];
   shapeCoords: number[];
-  color: string;
+  playerNumber: number;
   onBlockEnter: () => void;
   onBlockLeave: () => void;
   handleBlockClick: (gamePiece: number[][], coords: number[]) => void;
@@ -13,11 +13,26 @@ interface Props {
 const Block = ({
   gamePiece,
   shapeCoords,
-  color,
+  playerNumber,
   onBlockEnter,
   onBlockLeave,
   handleBlockClick,
 }: Props) => {
+  const getColor = (playerNumber: number) => {
+    switch (playerNumber) {
+      case 4:
+        return "yellow";
+      case 3:
+        return "green";
+      case 2:
+        return "blue";
+      case 1:
+        return "red";
+    }
+  };
+
+  const color = getColor(playerNumber);
+
   return (
     <div
       className="rounded-sm border-black"
