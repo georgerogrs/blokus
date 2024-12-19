@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import GridSquare from "./GridSquare";
-import { SELECT_BG_COLOR } from "../../utils/gameSettings";
 import GhostGridSquare from "./GhostGridSquare";
 
 interface GameGridProps {
@@ -29,7 +28,11 @@ const GameGrid = ({
                 let backgroundColor = "transparent";
                 if (cell === 1) {
                   backgroundColor = "red";
-                } else if (cell == 2) {
+                } else if (cell === 2) {
+                  backgroundColor = "blue";
+                } else if (cell === 3) {
+                  backgroundColor = "green";
+                } else if (cell === 4) {
                   backgroundColor = "yellow";
                 }
                 return (

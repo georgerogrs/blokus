@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import GameGrid from "./components/GameGrid";
 import Shape from "./components/Shape";
@@ -13,8 +13,8 @@ const Game = () => {
   const {
     gameGrid,
     updateGameGrid,
-    score,
-    updateScore,
+    userScores,
+    updateUserScore,
     hiddenGamePieces,
     hideGamePiece,
     shapePosition,
@@ -29,6 +29,25 @@ const Game = () => {
 
   const [blockClicked, setBlockClicked] = useState<boolean>(false);
   const [selectedGamePiece, setSelectedGamePiece] = useState<number[][]>([]);
+
+  const [currentPlayer, setCurrentPlayer] = useState(1);
+
+  const changeTurn = useCallback(() => {
+    switch (currentPlayer) {
+      case 1:
+        setCurrentPlayer(2);
+        break;
+      case 2:
+        setCurrentPlayer(3);
+        break;
+      case 3:
+        setCurrentPlayer(4);
+        break;
+      case 4:
+        setCurrentPlayer(1);
+        break;
+    }
+  }, [currentPlayer]);
 
   const handleGridEnter = () => {
     updateCursorInGrid(true);
@@ -60,14 +79,16 @@ const Game = () => {
           currentCoords,
           selectedGamePiece,
           clickedShapeCoords,
-          score
+          userScores[currentPlayer],
+          currentPlayer
         );
 
         // updatedGameGrid not null -> place piece success
         if (!!updatedGameGrid) {
-          updateScore(updatedScore); // Update score
-          updateGameGrid(updatedGameGrid); // Update gameGrid
+          updateUserScore(currentPlayer, updatedScore); // Update score
+          updateGameGrid(rotateGamePiece(updatedGameGrid)); // Update gameGrid
           hideGamePiece(selectedGamePiece); // Hide placed piece
+          changeTurn();
         }
 
         setBlockClicked(false);
@@ -92,13 +113,20 @@ const Game = () => {
     currentCoords,
     selectedGamePiece,
     clickedShapeCoords,
-    score,
+    currentPlayer,
+    userScores,
     deepCopyMatrix,
     hideGamePiece,
     placePieceOnGrid,
     updateGameGrid,
-    updateScore,
+    rotateGamePiece,
+    changeTurn,
+    updateUserScore,
   ]);
+
+  useEffect(() => {
+    console.log("userScores:", userScores);
+  }, [userScores]);
 
   return (
     <>
@@ -110,22 +138,63 @@ const Game = () => {
           handleGridLeave={handleGridLeave}
         />
         <h6 style={{ color: "white", fontSize: 20, marginBlock: 10 }}>
-          Score: {score}
+          Score: {userScores[currentPlayer]}
         </h6>
       </div>
 
       <ShapeContainer>
-        {Object.entries(SHAPES).map(([name, gamePiece]) => (
-          <div key={name} style={{ margin: 20 }}>
-            <Shape
-              type={randomRotatePiece(gamePiece)}
-              rotateGamePiece={rotateGamePiece}
-              hiddenGamePieces={hiddenGamePieces}
-              handleBlockClick={handleBlockClick}
-              position={shapePosition}
-            />
-          </div>
-        ))}
+        {currentPlayer === 1 &&
+          Object.entries(SHAPES).map(([name, gamePiece]) => (
+            <div key={name} style={{ margin: 20 }}>
+              <Shape
+                type={randomRotatePiece(gamePiece)}
+                rotateGamePiece={rotateGamePiece}
+                hiddenGamePieces={hiddenGamePieces}
+                handleBlockClick={handleBlockClick}
+                position={shapePosition}
+                color={"red"}
+              />
+            </div>
+          ))}
+        {currentPlayer === 2 &&
+          Object.entries(SHAPES).map(([name, gamePiece]) => (
+            <div key={name} style={{ margin: 20 }}>
+              <Shape
+                type={randomRotatePiece(gamePiece)}
+                rotateGamePiece={rotateGamePiece}
+                hiddenGamePieces={hiddenGamePieces}
+                handleBlockClick={handleBlockClick}
+                position={shapePosition}
+                color={"blue"}
+              />
+            </div>
+          ))}
+        {currentPlayer === 3 &&
+          Object.entries(SHAPES).map(([name, gamePiece]) => (
+            <div key={name} style={{ margin: 20 }}>
+              <Shape
+                type={randomRotatePiece(gamePiece)}
+                rotateGamePiece={rotateGamePiece}
+                hiddenGamePieces={hiddenGamePieces}
+                handleBlockClick={handleBlockClick}
+                position={shapePosition}
+                color={"green"}
+              />
+            </div>
+          ))}
+        {currentPlayer === 4 &&
+          Object.entries(SHAPES).map(([name, gamePiece]) => (
+            <div key={name} style={{ margin: 20 }}>
+              <Shape
+                type={randomRotatePiece(gamePiece)}
+                rotateGamePiece={rotateGamePiece}
+                hiddenGamePieces={hiddenGamePieces}
+                handleBlockClick={handleBlockClick}
+                position={shapePosition}
+                color={"yellow"}
+              />
+            </div>
+          ))}
       </ShapeContainer>
     </>
   );

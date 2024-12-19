@@ -12,12 +12,12 @@ export const useBoardLogic = () => {
   const { rotateGamePiece } = usePieceLogic();
   const { getCoordDiagonals } = useCoordinateOperations();
 
-  const countShapesOnGrid = (gameGrid: number[][]) => {
+  const countShapesOnGrid = (gameGrid: number[][], currentPlayer: number) => {
     const piecesOnBoard: number[][][] = [];
 
     for (let i = 0; i < gameGrid.length; i++) {
       for (let j = 0; j < gameGrid[0].length; j++) {
-        if (gameGrid[i][j] === 1) {
+        if (gameGrid[i][j] === currentPlayer) {
           const touchingCells = findAllTouchingCells(gameGrid, [i, j]);
 
           let pieceAccountedFor = false;
@@ -73,11 +73,11 @@ export const useBoardLogic = () => {
     return gapsInRows || gapsInColumns;
   };
 
-  const countScoreOnGrid = (gameGrid: number[][]) => {
+  const countScoreOnGrid = (gameGrid: number[][], currentPlayer: number) => {
     let score = 0;
     gameGrid.forEach((row) =>
       row.forEach((cell) => {
-        if (cell === 1) {
+        if (cell === currentPlayer) {
           score += 1;
         }
       })
@@ -92,6 +92,7 @@ export const useBoardLogic = () => {
     let finalRun = false;
     while (!finalRun) {
       finalRun = true;
+      // eslint-disable-next-line no-loop-func
       visitedCells.forEach((coord) => {
         const coordDiagonals = getCoordDiagonals(coord);
         const additionalCoords = coordDiagonals.filter((coord) => {

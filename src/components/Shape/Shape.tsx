@@ -6,17 +6,19 @@ import Draggable from "react-draggable";
 interface ShapeProps {
   type: number[][];
   hiddenGamePieces: number[][][];
+  position: { x: number; y: number };
+  color: string;
   rotateGamePiece: (gamePiece: number[][]) => number[][];
   handleBlockClick: (gamePiece: number[][], shapeCoords: number[]) => void;
-  position: { x: number; y: number };
 }
 
 const Shape = ({
   type,
   hiddenGamePieces,
+  position,
+  color,
   rotateGamePiece,
   handleBlockClick,
-  position,
 }: ShapeProps) => {
   const [gamePiece, setGamePiece] = useState<number[][]>(type);
   const [degrees, setDegrees] = useState<number>(0);
@@ -74,6 +76,7 @@ const Shape = ({
                           key={cellIndex}
                           gamePiece={gamePiece}
                           shapeCoords={[rowIndex, cellIndex]}
+                          color={color}
                           onBlockEnter={onBlockEnter}
                           onBlockLeave={onBlockLeave}
                           handleBlockClick={handleBlockClick}

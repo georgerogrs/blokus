@@ -118,11 +118,13 @@ export const useMatrixOperations = () => {
     return grid;
   };
 
-  const checkMatrixEmpty = (matrix: number[][]) => {
+  const checkMatrixEmpty = (matrix: number[][], num: number) => {
     let isEmpty = true;
+    let numberToCheck = 1;
+    if (num) numberToCheck = num;
     matrix.forEach((row) =>
       row.forEach((cell) => {
-        if (cell === 1) {
+        if (cell === numberToCheck) {
           isEmpty = false;
         }
       })
