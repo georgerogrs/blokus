@@ -9,7 +9,7 @@ export const useBoardLogic = () => {
     withinMatrixBounds,
     arrayInMatrix,
   } = useMatrixOperations();
-  const { rotateGamePiece } = usePieceLogic();
+  const { turnPiece } = usePieceLogic();
   const { getCoordDiagonals } = useCoordinateOperations();
 
   const countShapesOnGrid = (gameGrid: number[][], currentPlayer: number) => {
@@ -64,9 +64,7 @@ export const useBoardLogic = () => {
   };
 
   const findGapsInGridColumns = (gameGrid: number[][]) => {
-    const rotatedGameGrid = rotateGamePiece(
-      rotateGamePiece(rotateGamePiece(gameGrid))
-    );
+    const rotatedGameGrid = turnPiece(gameGrid, 3);
     return findGapsInGridRows(rotatedGameGrid);
   };
 

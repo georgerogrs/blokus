@@ -30,5 +30,5 @@ export const usePieceLogic = () => {
     return turnPiece(gamePiece, randomInt);
   };
 
-  return { rotateGamePiece, randomRotatePiece };
+  return { turnPiece, randomRotatePiece };
 };

@@ -20,7 +20,7 @@ const Shape = ({
   position,
   handleBlockClick,
 }: ShapeProps) => {
-  const { rotateGamePiece } = usePieceLogic();
+  const { turnPiece } = usePieceLogic();
   const [gamePiece, setGamePiece] = useState<number[][]>(type);
   const [degrees, setDegrees] = useState<number>(0);
   const [transitionTime, setTransitionTime] = useState<number>(1);
@@ -30,7 +30,7 @@ const Shape = ({
     setDegrees(degrees + 90);
     setTransitionTime(0.1);
     setTimeout(() => {
-      const rotatedGamePiece = rotateGamePiece(gamePiece);
+      const rotatedGamePiece = turnPiece(gamePiece, 1);
       setGamePiece(rotatedGamePiece);
       setTransitionTime(0);
       setDegrees(degrees);
@@ -55,6 +55,7 @@ const Shape = ({
       handle=".handle"
       scale={1}
       disabled={disableDraggable}
+      grid={[4, 4]}
     >
       <div className="handle">
         {!hideShape && (
