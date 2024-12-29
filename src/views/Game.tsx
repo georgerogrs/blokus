@@ -28,12 +28,24 @@ const Game = () => {
   } = useBoardState();
   const { turnPiece, randomRotatePiece } = usePieceLogic();
 
+  const initialPlayersInGame = [1, 2, 3, 4];
+
   const [blockClicked, setBlockClicked] = useState<boolean>(false);
   const [selectedGamePiece, setSelectedGamePiece] = useState<number[][]>([]);
-  const initialPlayersInGame = [1, 2, 3, 4];
   const [playersInGame, setPlayersInGame] =
     useState<number[]>(initialPlayersInGame);
   const [currentPlayer, setCurrentPlayer] = useState(1);
+
+  const playerColor =
+    currentPlayer === 1
+      ? "red"
+      : currentPlayer === 2
+      ? "blue"
+      : currentPlayer === 3
+      ? "green"
+      : currentPlayer === 4
+      ? "yellow"
+      : "unknown";
 
   const resetPlayersInGame = () => setPlayersInGame(initialPlayersInGame);
 
@@ -147,26 +159,45 @@ const Game = () => {
   ]);
 
   return (
-    <>
-      <div className="w-screen flex flex-col justify-center items-center mt-3">
+    <div className="flex flex-row">
+      <div className="w-screen flex flex-col justify-start items-center m-1">
         <GameGrid
           gameGrid={gameGrid}
+          currentPlayer={currentPlayer}
           handleGridSquareEnter={handleGridSquareEnter}
           handleGridEnter={handleGridEnter}
           handleGridLeave={handleGridLeave}
         />
         {playersState[currentPlayer] && (
-          <h6 className="text-white text-[20px] my-2.5">
-            Score: {playersState[currentPlayer].score}
-          </h6>
+          <div className="flex flex-row items-center w-full px-20">
+            <div className="flex flex-col items-start mb-2.5">
+              <h1
+                className="text-[40px]  mr-5 font-bold drop-shadow-2xl"
+                style={{ color: playerColor }}
+              >
+                Player {currentPlayer}
+              </h1>
+              <h6 className="text-slate-400 text-[20px] mr-5 font-bold">
+                Your turn! Place a shape on the grid.
+              </h6>
+            </div>
+            <div style={{ display: "flex", flex: 1 }} />
+            <div className="flex flex-col items-center">
+              <h6 className="text-white text-[45px] my-2.5 font-black drop-shadow-2xl">
+                {playersState[currentPlayer].score}
+              </h6>
+            </div>
+          </div>
         )}
-        <button
-          onClick={() => handleGiveUpTurn(currentPlayer)}
-          className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded"
-          type="button"
-        >
-          Give up
-        </button>
+        <div className="w-full px-20">
+          <button
+            onClick={() => handleGiveUpTurn(currentPlayer)}
+            className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 border-b-4 border-blue-700 hover:border-blue-500 rounded w-full"
+            type="button"
+          >
+            Give up
+          </button>
+        </div>
       </div>
 
       {playersState[currentPlayer] && (
@@ -177,8 +208,10 @@ const Game = () => {
                 type={randomRotatePiece(gamePiece)}
                 playerNumber={currentPlayer}
                 playersState={playersState}
-                handleBlockClick={handleBlockClick}
+                selectedGamePiece={selectedGamePiece}
                 position={shapePosition}
+                blockClicked={blockClicked}
+                handleBlockClick={handleBlockClick}
               />
             </div>
           ))}
@@ -203,7 +236,7 @@ const Game = () => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

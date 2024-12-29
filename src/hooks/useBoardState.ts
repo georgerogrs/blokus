@@ -20,7 +20,7 @@ export const useBoardState = () => {
     countScoreOnGrid,
   } = useBoardLogic();
 
-  const gameGridSize = 13;
+  const gameGridSize = 17;
   const initialPlayersState = {
     1: { score: 0, playedShapes: [] },
     2: { score: 0, playedShapes: [] },
