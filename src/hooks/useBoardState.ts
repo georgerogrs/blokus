@@ -4,7 +4,10 @@ import { initialShapePosition } from "../utils/constants";
 import { useBoardLogic } from "./useBoardLogic";
 
 export interface IPlayersState {
-  [key: number]: { score: number; playedShapes: number[][][] };
+  [key: number]: {
+    score: number;
+    playedShapes: number[][][];
+  };
 }
 
 export const useBoardState = () => {
@@ -17,15 +20,19 @@ export const useBoardState = () => {
     countScoreOnGrid,
   } = useBoardLogic();
 
-  const [gameGrid, setGameGrid] = useState<number[][]>(
-    createEmptyMatrix(13, 13)
-  );
-  const [playersState, setPlayersState] = useState<IPlayersState>({
+  const gameGridSize = 17;
+  const initialPlayersState = {
     1: { score: 0, playedShapes: [] },
     2: { score: 0, playedShapes: [] },
     3: { score: 0, playedShapes: [] },
     4: { score: 0, playedShapes: [] },
-  });
+  };
+
+  const [gameGrid, setGameGrid] = useState<number[][]>(
+    createEmptyMatrix(gameGridSize, gameGridSize)
+  );
+  const [playersState, setPlayersState] =
+    useState<IPlayersState>(initialPlayersState);
   const [shapePosition, setShapePosition] = useState(initialShapePosition);
   const [cursorInGrid, setCursorInGrid] = useState<boolean>(false);
   const [currentCoords, setCurrentCoords] = useState<number[]>([]);
@@ -60,6 +67,11 @@ export const useBoardState = () => {
 
   const updateClickedShapeCoords = (newCoords: number[]) =>
     setClickedShapeCoords(newCoords);
+
+  const resetGameGrid = () =>
+    setGameGrid(createEmptyMatrix(gameGridSize, gameGridSize));
+
+  const resetPlayersState = () => setPlayersState(initialPlayersState);
 
   const placePieceOnGrid = (
     gameGridCopy: number[][],
@@ -168,5 +180,7 @@ export const useBoardState = () => {
     clickedShapeCoords,
     updateClickedShapeCoords,
     placePieceOnGrid,
+    resetGameGrid,
+    resetPlayersState,
   };
 };
