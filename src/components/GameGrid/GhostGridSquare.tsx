@@ -16,7 +16,9 @@ const GhostGridSquare = ({
         width: BLOCK_SIZE,
         height: BLOCK_SIZE,
         backgroundColor: "black",
-        opacity: 0.05,
+        opacity: 0,
+        borderWidth: 1,
+        borderColor: "black",
         zIndex: 3,
       }}
       onMouseEnter={() => handleGridSquareEnter(coords)}

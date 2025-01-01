@@ -10,7 +10,7 @@ const GridSquare = ({ backgroundColor }: GridSquareProps) => {
     <div
       className="border-black"
       style={{
-        borderWidth: "0.5px",
+        borderWidth: 1,
         width: BLOCK_SIZE,
         height: BLOCK_SIZE,
         backgroundColor: backgroundColor,

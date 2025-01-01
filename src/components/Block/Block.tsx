@@ -40,7 +40,7 @@ const Block = ({
         width: BLOCK_SIZE,
         height: BLOCK_SIZE,
         backgroundColor: color,
-        borderWidth: "0.5px",
+        borderWidth: "1px",
       }}
       onMouseEnter={onBlockEnter}
       onMouseLeave={onBlockLeave}

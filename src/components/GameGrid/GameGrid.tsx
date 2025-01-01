@@ -30,7 +30,7 @@ const GameGrid = ({
       <div style={{ position: "relative" }}>
         <div
           className="m-3 border-black cursor-pointer"
-          style={{ borderWidth: "1px" }}
+          style={{ borderWidth: 1 }}
         >
           {gameGrid?.map((row, rowIndex) => {
             return (

@@ -160,7 +160,7 @@ const Game = () => {
 
   return (
     <div className="flex flex-row">
-      <div className="w-screen flex flex-col justify-start items-center m-1">
+      <div className="w-screen flex flex-col justify-start items-center m-1 mt-3">
         <GameGrid
           gameGrid={gameGrid}
           currentPlayer={currentPlayer}
@@ -172,7 +172,7 @@ const Game = () => {
           <div className="flex flex-row items-center w-full px-20">
             <div className="flex flex-col items-start mb-2.5">
               <h1
-                className="text-[40px]  mr-5 font-bold drop-shadow-2xl"
+                className="text-[40px]  mr-5 font-bold drop-shadow-4xl"
                 style={{ color: playerColor }}
               >
                 Player {currentPlayer}
