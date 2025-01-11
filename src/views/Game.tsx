@@ -40,6 +40,17 @@ const Game = () => {
   const [winningScore, setWinningScore] = useState<number>(0);
   const lastPlayer = initialPlayersInGame[initialPlayersInGame.length - 1];
 
+  const shuffleObject = (obj: Record<string, any>): Record<string, any> => {
+    const entries = Object.entries(obj);
+    for (let i = entries.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [entries[i], entries[j]] = [entries[j], entries[i]];
+    }
+    return Object.fromEntries(entries);
+  };
+
+  const [mixedShapes] = useState(shuffleObject(SHAPES));
+
   const playerColor =
     currentPlayer === 1
       ? "red"
@@ -258,7 +269,7 @@ const Game = () => {
 
       {playersState[currentPlayer] && (
         <ShapeContainer>
-          {Object.entries(SHAPES).map(([name, gamePiece]) => (
+          {Object.entries(mixedShapes).map(([name, gamePiece]) => (
             <div key={name} style={{ margin: 20 }}>
               <Shape
                 type={randomRotatePiece(gamePiece)}

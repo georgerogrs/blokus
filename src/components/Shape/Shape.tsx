@@ -29,7 +29,8 @@ const Shape = ({
   const [degrees, setDegrees] = useState<number>(0);
   const [transitionTime, setTransitionTime] = useState<number>(1);
   const [disableDraggable, setDisableDraggable] = useState<boolean>(true);
-  const [scale, setScale] = useState(0.8);
+  const initialScale = 0.8;
+  const [scale, setScale] = useState(initialScale);
 
   const handleOnDoubleClick = () => {
     setDegrees(degrees + 90);
