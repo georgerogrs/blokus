@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import GridSquare from "./GridSquare";
 import GhostGridSquare from "./GhostGridSquare";
 import NextPlayer from "../Modal/NextPlayerModal";
-import { useToggleState } from "../../hooks/useToggleState";
 
 interface GameGridProps {
   gameGrid: number[][] | undefined;
@@ -37,6 +36,7 @@ const GameGrid = ({
               <div key={rowIndex} style={{ display: "flex" }}>
                 {row.map((cell, cellIndex) => {
                   let backgroundColor = "transparent";
+                  let nonePlaced = false;
                   if (cell === 1) {
                     backgroundColor = "red";
                   } else if (cell === 2) {
@@ -46,10 +46,20 @@ const GameGrid = ({
                   } else if (cell === 4) {
                     backgroundColor = "yellow";
                   }
+                  if (
+                    rowIndex === gameGrid.length - 1 &&
+                    cellIndex === 0 &&
+                    cell === 0
+                  ) {
+                    nonePlaced = true;
+                  } else {
+                    nonePlaced = false;
+                  }
                   return (
                     <GridSquare
                       key={cellIndex}
                       backgroundColor={backgroundColor}
+                      nonePlaced={nonePlaced}
                     />
                   );
                 })}

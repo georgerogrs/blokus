@@ -6,10 +6,10 @@ import ShapeContainer from "../components/ShapeContainer";
 import { usePieceLogic } from "../hooks/usePieceLogic";
 import { SHAPES } from "../utils/shapes";
 import { useMatrixOperations } from "../hooks/useMatrixOperations";
-import { useBoardState } from "../hooks/useBoardState";
+import { IPlayersState, useBoardState } from "../hooks/useBoardState";
 
 const Game = () => {
-  const { deepCopyMatrix } = useMatrixOperations();
+  const { deepCopyMatrix, checkMatrixEmpty } = useMatrixOperations();
   const {
     gameGrid,
     updateGameGrid,
@@ -34,7 +34,11 @@ const Game = () => {
   const [selectedGamePiece, setSelectedGamePiece] = useState<number[][]>([]);
   const [playersInGame, setPlayersInGame] =
     useState<number[]>(initialPlayersInGame);
-  const [currentPlayer, setCurrentPlayer] = useState(1);
+  const [currentPlayer, setCurrentPlayer] = useState<number>(1);
+  const [turnNumber, setTurnNumber] = useState<number>(1);
+  const [winner, setWinner] = useState<number | null>(null);
+  const [winningScore, setWinningScore] = useState<number>(0);
+  const lastPlayer = initialPlayersInGame[initialPlayersInGame.length - 1];
 
   const playerColor =
     currentPlayer === 1
@@ -67,10 +71,40 @@ const Game = () => {
     [playersInGame]
   );
 
+  const findWinner = (playersState: IPlayersState) => {
+    let winner = ""; // Will hold the player ID of the winner
+    let highestScore = -Infinity; // Initialize with a very low score
+    let draw = false; // Flag to indicate if there's a draw
+    let highScorersCount = 0; // Count players with the highest score
+
+    for (const playerId in playersState) {
+      const player = playersState[playerId];
+
+      if (player.score > highestScore) {
+        highestScore = player.score;
+        winner = playerId;
+        highScorersCount = 1; // Reset to 1 since we found a new highest score
+        draw = false; // Reset draw flag since we found a higher score
+      } else if (player.score === highestScore) {
+        highScorersCount++; // Increment count of players with the highest score
+        draw = highScorersCount > 1; // Set draw to true if more than one player has the highest score
+      }
+    }
+
+    const playerNumber = draw ? null : parseInt(winner);
+
+    return { playerNumber, score: highestScore, isDraw: draw };
+  };
+
   const handleGiveUpTurn = (currentPlayer: number) => {
     const playersInGameCopy = playersInGame.filter(
       (value) => value !== currentPlayer
     );
+    if (playersInGame.length === 1) {
+      const winner = findWinner(playersState);
+      setWinner(winner.playerNumber);
+      setWinningScore(winner.score);
+    }
     setPlayersInGame(playersInGameCopy);
     const positionsToRotate = changeTurn(currentPlayer);
     updateGameGrid(turnPiece(gameGrid, positionsToRotate));
@@ -101,7 +135,12 @@ const Game = () => {
     resetGameGrid();
     resetPlayersState();
     resetPlayersInGame();
+    setTurnNumber(1);
   };
+
+  const incrementTurn = useCallback(() => {
+    setTurnNumber(turnNumber + 1);
+  }, [turnNumber]);
 
   useEffect(() => {
     const handleBlockHoldMouseUp = (event: MouseEvent) => {
@@ -121,8 +160,14 @@ const Game = () => {
         if (!!updatedGameGrid) {
           updatePlayerScore(updatedScore, currentPlayer); // Update score
           hideGamePiece(selectedGamePiece, currentPlayer); // Hide placed piece
-          const positionsToRotate = changeTurn(currentPlayer);
+          let positionsToRotate = changeTurn(currentPlayer);
+          if (playersInGame.length === 1) {
+            positionsToRotate = 0;
+          }
           updateGameGrid(turnPiece(updatedGameGrid, positionsToRotate)); // Update gameGrid
+          if (currentPlayer === lastPlayer) {
+            incrementTurn();
+          }
         }
 
         setBlockClicked(false);
@@ -150,7 +195,10 @@ const Game = () => {
     deepCopyMatrix,
     gameGrid,
     hideGamePiece,
+    incrementTurn,
+    lastPlayer,
     placePieceOnGrid,
+    playersInGame.length,
     playersState,
     selectedGamePiece,
     turnPiece,
@@ -161,6 +209,12 @@ const Game = () => {
   return (
     <div className="flex flex-row">
       <div className="w-screen flex flex-col justify-start items-center m-1 mt-3">
+        <h6
+          className="text-white text-2xl font-bold"
+          style={{ textShadow: "black 0px 4px" }}
+        >
+          Turn: {turnNumber}
+        </h6>
         <GameGrid
           gameGrid={gameGrid}
           currentPlayer={currentPlayer}
@@ -178,7 +232,9 @@ const Game = () => {
                 Player {currentPlayer}
               </h1>
               <h6 className="text-slate-400 text-[20px] mr-5 font-bold">
-                Your turn! Place a shape on the grid.
+                {checkMatrixEmpty(gameGrid, currentPlayer)
+                  ? "Drag a piece in the bottom left corner."
+                  : "Your turn! Place a shape on the grid."}
               </h6>
             </div>
             <div style={{ display: "flex", flex: 1 }} />
@@ -218,20 +274,38 @@ const Game = () => {
         </ShapeContainer>
       )}
       {playersInGame.length < 1 && (
-        <div className="fixed top-0 w-screen h-screen flex flex-col justify-center items-center bg-black bg-opacity-50 z-20">
+        <div className="fixed top-0 w-screen h-screen flex flex-col justify-center items-center bg-black bg-opacity-80 z-20">
           <div
-            className="absolute top-1/3 py-7 px-7 rounded bg-opacity-100"
+            className="absolute top-1/4 pb-7 px-7 rounded-lg bg-opacity-100 flex flex-col items-center"
             style={{ backgroundColor: "#282c34" }}
           >
-            <h1 className="text-white my-2.5">Game Over</h1>
+            <h1
+              className="text-white my-2.5 font-bold text-[60px]"
+              style={{ textShadow: "black 0px 8px" }}
+            >
+              Game Over
+            </h1>
+            <h4
+              className="text-white mt-2.5 font-bold text-[35px] flex flex-row"
+              style={{ textShadow: "black 0px 4px" }}
+            >
+              {winner === null ? "Draw!" : `Player ${winner} wins!`}
+            </h4>
+            <h6
+              className="text-white mb-2.5 font-bold text-[20px] flex flex-row"
+              style={{ color: "grey" }}
+            >
+              Winning Score: {winningScore}
+            </h6>
             <button
               onClick={() => {
                 handleRestartGame();
               }}
-              className="bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 border-b-4 border-red-700 hover:border-red-500 rounded"
+              className="bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 border-b-4 border-red-700 hover:border-red-500 rounded mt-5"
               type="button"
+              style={{ width: "80%" }}
             >
-              Restart
+              Restart Game
             </button>
           </div>
         </div>
