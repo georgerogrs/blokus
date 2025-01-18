@@ -3,7 +3,7 @@ import Block from "../Block";
 import EmptyBlock from "../Block/EmptyBlock";
 import Draggable from "react-draggable";
 import { usePieceLogic } from "../../hooks/usePieceLogic";
-import { IPlayersState } from "../../hooks/useBoardState";
+import { IPlayersState } from "../../hooks/useGameState";
 
 interface ShapeProps {
   type: number[][];

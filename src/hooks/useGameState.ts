@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useMatrixOperations } from "./useMatrixOperations";
 import { initialShapePosition } from "../utils/constants";
 import { useBoardLogic } from "./useBoardLogic";
+import { useWinner } from "./useWinner";
+import { usePieceLogic } from "../hooks/usePieceLogic";
 
 export interface IPlayersState {
   [key: number]: {
@@ -12,6 +14,7 @@ export interface IPlayersState {
 
 export const useBoardState = () => {
   const { createEmptyMatrix, checkMatrixEmpty } = useMatrixOperations();
+  const { turnPiece } = usePieceLogic();
   const {
     countShapesOnGrid,
     checkStartingCoords,
@@ -19,6 +22,7 @@ export const useBoardState = () => {
     checkCorrectPlacementOnBoard,
     countScoreOnGrid,
   } = useBoardLogic();
+  const { findWinner } = useWinner();
 
   const gameGridSize = 17;
   const initialPlayersState = {
@@ -27,6 +31,8 @@ export const useBoardState = () => {
     3: { score: 0, playedShapes: [] },
     4: { score: 0, playedShapes: [] },
   };
+  const initialPlayersInGame = [1, 2, 3, 4];
+  const lastPlayer = initialPlayersInGame[initialPlayersInGame.length - 1];
 
   const [gameGrid, setGameGrid] = useState<number[][]>(
     createEmptyMatrix(gameGridSize, gameGridSize)
@@ -37,6 +43,12 @@ export const useBoardState = () => {
   const [cursorInGrid, setCursorInGrid] = useState<boolean>(false);
   const [currentCoords, setCurrentCoords] = useState<number[]>([]);
   const [clickedShapeCoords, setClickedShapeCoords] = useState<number[]>([]);
+  const [currentPlayer, setCurrentPlayer] = useState<number>(1);
+  const [playersInGame, setPlayersInGame] =
+    useState<number[]>(initialPlayersInGame);
+  const [winner, setWinner] = useState<number | null>(null);
+  const [winningScore, setWinningScore] = useState<number>(0);
+  const [turnNumber, setTurnNumber] = useState<number>(1);
 
   const updateGameGrid = (newGrid: number[][]) => setGameGrid(newGrid);
 
@@ -72,6 +84,8 @@ export const useBoardState = () => {
     setGameGrid(createEmptyMatrix(gameGridSize, gameGridSize));
 
   const resetPlayersState = () => setPlayersState(initialPlayersState);
+
+  const resetPlayersInGame = () => setPlayersInGame(initialPlayersInGame);
 
   const placePieceOnGrid = (
     gameGridCopy: number[][],
@@ -165,6 +179,50 @@ export const useBoardState = () => {
     }
   };
 
+  const changeTurn = useCallback(
+    (currentPlayer: number) => {
+      if (playersInGame.indexOf(currentPlayer) + 1 === playersInGame.length) {
+        setCurrentPlayer(playersInGame[0]);
+        return playersInGame[0];
+      } else {
+        const positionsToRotate =
+          playersInGame[playersInGame.indexOf(currentPlayer) + 1] -
+          currentPlayer;
+        setCurrentPlayer(
+          playersInGame[playersInGame.indexOf(currentPlayer) + 1]
+        );
+        return positionsToRotate;
+      }
+    },
+    [playersInGame]
+  );
+
+  const handleGiveUpTurn = (currentPlayer: number) => {
+    const playersInGameCopy = playersInGame.filter(
+      (value) => value !== currentPlayer
+    );
+    if (playersInGame.length === 1) {
+      const winner = findWinner(playersState);
+      setWinner(winner.playerNumber);
+      setWinningScore(winner.score);
+    }
+    setPlayersInGame(playersInGameCopy);
+    const positionsToRotate = changeTurn(currentPlayer);
+    updateGameGrid(turnPiece(gameGrid, positionsToRotate));
+  };
+
+  const handleRestartGame = () => {
+    setCurrentPlayer(1);
+    resetGameGrid();
+    resetPlayersState();
+    resetPlayersInGame();
+    setTurnNumber(1);
+  };
+
+  const incrementTurn = useCallback(() => {
+    setTurnNumber(turnNumber + 1);
+  }, [turnNumber]);
+
   return {
     gameGrid,
     updateGameGrid,
@@ -182,5 +240,16 @@ export const useBoardState = () => {
     placePieceOnGrid,
     resetGameGrid,
     resetPlayersState,
+    currentPlayer,
+    changeTurn,
+    lastPlayer,
+    resetPlayersInGame,
+    winner,
+    winningScore,
+    incrementTurn,
+    playersInGame,
+    turnNumber,
+    handleGiveUpTurn,
+    handleRestartGame,
   };
 };

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import GameGrid from "../components/GameGrid";
 import Shape from "../components/Shape";
@@ -6,10 +6,13 @@ import ShapeContainer from "../components/ShapeContainer";
 import { usePieceLogic } from "../hooks/usePieceLogic";
 import { SHAPES } from "../utils/shapes";
 import { useMatrixOperations } from "../hooks/useMatrixOperations";
-import { IPlayersState, useBoardState } from "../hooks/useBoardState";
+import { useBoardState } from "../hooks/useGameState";
+import GameOverModal from "../components/Modal/GameOverModal/GameOverModal";
+import GridDescriptor from "../components/GridDescriptor";
+import { useGamePieceState } from "../hooks/useGamePieceState";
 
 const Game = () => {
-  const { deepCopyMatrix, checkMatrixEmpty } = useMatrixOperations();
+  const { deepCopyMatrix } = useMatrixOperations();
   const {
     gameGrid,
     updateGameGrid,
@@ -21,36 +24,28 @@ const Game = () => {
     currentCoords,
     updateCurrentCoords,
     clickedShapeCoords,
-    updateClickedShapeCoords,
     placePieceOnGrid,
-    resetGameGrid,
-    resetPlayersState,
+    currentPlayer,
+    changeTurn,
+    lastPlayer,
+    winner,
+    winningScore,
+    incrementTurn,
+    playersInGame,
+    turnNumber,
+    handleGiveUpTurn,
+    handleRestartGame,
   } = useBoardState();
   const { turnPiece, randomRotatePiece } = usePieceLogic();
-
-  const initialPlayersInGame = [1, 2, 3, 4];
-
-  const [blockClicked, setBlockClicked] = useState<boolean>(false);
-  const [selectedGamePiece, setSelectedGamePiece] = useState<number[][]>([]);
-  const [playersInGame, setPlayersInGame] =
-    useState<number[]>(initialPlayersInGame);
-  const [currentPlayer, setCurrentPlayer] = useState<number>(1);
-  const [turnNumber, setTurnNumber] = useState<number>(1);
-  const [winner, setWinner] = useState<number | null>(null);
-  const [winningScore, setWinningScore] = useState<number>(0);
-  const lastPlayer = initialPlayersInGame[initialPlayersInGame.length - 1];
-
-  const shuffleObject = (obj: Record<string, any>): Record<string, any> => {
-    const entries = Object.entries(obj);
-    for (let i = entries.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [entries[i], entries[j]] = [entries[j], entries[i]];
-    }
-    return Object.fromEntries(entries);
-  };
+  const {
+    blockClicked,
+    selectedGamePiece,
+    handleBlockClick,
+    resetBlockClicked,
+    shuffleObject,
+  } = useGamePieceState();
 
   const [mixedShapes] = useState(shuffleObject(SHAPES));
-
   const playerColor =
     currentPlayer === 1
       ? "red"
@@ -61,65 +56,6 @@ const Game = () => {
       : currentPlayer === 4
       ? "yellow"
       : "unknown";
-
-  const resetPlayersInGame = () => setPlayersInGame(initialPlayersInGame);
-
-  const changeTurn = useCallback(
-    (currentPlayer: number) => {
-      if (playersInGame.indexOf(currentPlayer) + 1 === playersInGame.length) {
-        setCurrentPlayer(playersInGame[0]);
-        return playersInGame[0];
-      } else {
-        const positionsToRotate =
-          playersInGame[playersInGame.indexOf(currentPlayer) + 1] -
-          currentPlayer;
-        setCurrentPlayer(
-          playersInGame[playersInGame.indexOf(currentPlayer) + 1]
-        );
-        return positionsToRotate;
-      }
-    },
-    [playersInGame]
-  );
-
-  const findWinner = (playersState: IPlayersState) => {
-    let winner = ""; // Will hold the player ID of the winner
-    let highestScore = -Infinity; // Initialize with a very low score
-    let draw = false; // Flag to indicate if there's a draw
-    let highScorersCount = 0; // Count players with the highest score
-
-    for (const playerId in playersState) {
-      const player = playersState[playerId];
-
-      if (player.score > highestScore) {
-        highestScore = player.score;
-        winner = playerId;
-        highScorersCount = 1; // Reset to 1 since we found a new highest score
-        draw = false; // Reset draw flag since we found a higher score
-      } else if (player.score === highestScore) {
-        highScorersCount++; // Increment count of players with the highest score
-        draw = highScorersCount > 1; // Set draw to true if more than one player has the highest score
-      }
-    }
-
-    const playerNumber = draw ? null : parseInt(winner);
-
-    return { playerNumber, score: highestScore, isDraw: draw };
-  };
-
-  const handleGiveUpTurn = (currentPlayer: number) => {
-    const playersInGameCopy = playersInGame.filter(
-      (value) => value !== currentPlayer
-    );
-    if (playersInGame.length === 1) {
-      const winner = findWinner(playersState);
-      setWinner(winner.playerNumber);
-      setWinningScore(winner.score);
-    }
-    setPlayersInGame(playersInGameCopy);
-    const positionsToRotate = changeTurn(currentPlayer);
-    updateGameGrid(turnPiece(gameGrid, positionsToRotate));
-  };
 
   const handleGridEnter = () => {
     updateCursorInGrid(true);
@@ -134,24 +70,6 @@ const Game = () => {
       updateCurrentCoords(coords);
     }
   };
-
-  const handleBlockClick = (gamePiece: number[][], shapeCoords: number[]) => {
-    setBlockClicked(true);
-    setSelectedGamePiece(gamePiece);
-    updateClickedShapeCoords(shapeCoords);
-  };
-
-  const handleRestartGame = () => {
-    setCurrentPlayer(1);
-    resetGameGrid();
-    resetPlayersState();
-    resetPlayersInGame();
-    setTurnNumber(1);
-  };
-
-  const incrementTurn = useCallback(() => {
-    setTurnNumber(turnNumber + 1);
-  }, [turnNumber]);
 
   useEffect(() => {
     const handleBlockHoldMouseUp = (event: MouseEvent) => {
@@ -181,7 +99,7 @@ const Game = () => {
           }
         }
 
-        setBlockClicked(false);
+        resetBlockClicked();
       }
     };
 
@@ -209,8 +127,9 @@ const Game = () => {
     incrementTurn,
     lastPlayer,
     placePieceOnGrid,
-    playersInGame.length,
+    playersInGame,
     playersState,
+    resetBlockClicked,
     selectedGamePiece,
     turnPiece,
     updateGameGrid,
@@ -220,10 +139,7 @@ const Game = () => {
   return (
     <div className="flex flex-row">
       <div className="w-screen flex flex-col justify-start items-center m-1 mt-3">
-        <h6
-          className="text-white text-2xl font-bold"
-          style={{ textShadow: "black 0px 4px" }}
-        >
+        <h6 className="text-white text-2xl font-bold drop-shadow-lg">
           Turn: {turnNumber}
         </h6>
         <GameGrid
@@ -233,38 +149,13 @@ const Game = () => {
           handleGridEnter={handleGridEnter}
           handleGridLeave={handleGridLeave}
         />
-        {playersState[currentPlayer] && (
-          <div className="flex flex-row items-center w-full px-20">
-            <div className="flex flex-col items-start mb-2.5">
-              <h1
-                className="text-[40px]  mr-5 font-bold drop-shadow-4xl"
-                style={{ color: playerColor }}
-              >
-                Player {currentPlayer}
-              </h1>
-              <h6 className="text-slate-400 text-[20px] mr-5 font-bold">
-                {checkMatrixEmpty(gameGrid, currentPlayer)
-                  ? "Drag a piece in the bottom left corner."
-                  : "Your turn! Place a shape on the grid."}
-              </h6>
-            </div>
-            <div style={{ display: "flex", flex: 1 }} />
-            <div className="flex flex-col items-center">
-              <h6 className="text-white text-[45px] my-2.5 font-black drop-shadow-2xl">
-                {playersState[currentPlayer].score}
-              </h6>
-            </div>
-          </div>
-        )}
-        <div className="w-full px-20">
-          <button
-            onClick={() => handleGiveUpTurn(currentPlayer)}
-            className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 border-b-4 border-blue-700 hover:border-blue-500 rounded w-full"
-            type="button"
-          >
-            Give up
-          </button>
-        </div>
+        <GridDescriptor
+          playersState={playersState}
+          currentPlayer={currentPlayer}
+          playerColor={playerColor}
+          gameGrid={gameGrid}
+          handleGiveUpTurn={handleGiveUpTurn}
+        />
       </div>
 
       {playersState[currentPlayer] && (
@@ -285,41 +176,11 @@ const Game = () => {
         </ShapeContainer>
       )}
       {playersInGame.length < 1 && (
-        <div className="fixed top-0 w-screen h-screen flex flex-col justify-center items-center bg-black bg-opacity-80 z-20">
-          <div
-            className="absolute top-1/4 pb-7 px-7 rounded-lg bg-opacity-100 flex flex-col items-center"
-            style={{ backgroundColor: "#282c34" }}
-          >
-            <h1
-              className="text-white my-2.5 font-bold text-[60px]"
-              style={{ textShadow: "black 0px 8px" }}
-            >
-              Game Over
-            </h1>
-            <h4
-              className="text-white mt-2.5 font-bold text-[35px] flex flex-row"
-              style={{ textShadow: "black 0px 4px" }}
-            >
-              {winner === null ? "Draw!" : `Player ${winner} wins!`}
-            </h4>
-            <h6
-              className="text-white mb-2.5 font-bold text-[20px] flex flex-row"
-              style={{ color: "grey" }}
-            >
-              Winning Score: {winningScore}
-            </h6>
-            <button
-              onClick={() => {
-                handleRestartGame();
-              }}
-              className="bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 border-b-4 border-red-700 hover:border-red-500 rounded mt-5"
-              type="button"
-              style={{ width: "80%" }}
-            >
-              Restart Game
-            </button>
-          </div>
-        </div>
+        <GameOverModal
+          winner={winner}
+          winningScore={winningScore}
+          handleRestartGame={handleRestartGame}
+        />
       )}
     </div>
   );
