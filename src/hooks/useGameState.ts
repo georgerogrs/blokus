@@ -12,7 +12,7 @@ export interface IPlayersState {
   };
 }
 
-export const useBoardState = () => {
+export const useGameState = () => {
   const { createEmptyMatrix, checkMatrixEmpty } = useMatrixOperations();
   const { turnPiece } = usePieceLogic();
   const {
@@ -95,11 +95,17 @@ export const useBoardState = () => {
     currentScore: number,
     currentPlayer: number
   ) => {
+    console.log("coordsOnGrid:", coordsOnGrid);
+    console.log("clickedShapeCoord:", clickedShapeCoord);
+
     // Work out how much to go up
     const goUp = coordsOnGrid[0] - clickedShapeCoord[0];
 
     // Work out how much to go left
     const goLeft = coordsOnGrid[1] - clickedShapeCoord[1];
+
+    console.log("goUp:", goUp);
+    console.log("goLeft:", goLeft);
 
     const startingCoord = [goUp, goLeft];
 
@@ -112,7 +118,9 @@ export const useBoardState = () => {
           gamePiece,
           startingCoord
         );
+
         if (!validStartingPoint) {
+          console.error("Not a valid starting position");
           resetShapePosition();
           return { updatedGameGrid: null, updatedScore: null };
         }
@@ -174,6 +182,7 @@ export const useBoardState = () => {
 
       return { updatedGameGrid, updatedScore };
     } else {
+      console.error("Piece is placed outside the bounds of the board");
       resetShapePosition();
       return { updatedGameGrid: null, updatedScore: null };
     }

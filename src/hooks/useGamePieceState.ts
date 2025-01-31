@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { useBoardState } from "./useGameState";
 
-export const useGamePieceState = () => {
-  const { updateClickedShapeCoords } = useBoardState();
-
+export const useGamePieceState = (
+  updateClickedShapeCoords: (coord: number[]) => void
+) => {
   const [blockClicked, setBlockClicked] = useState<boolean>(false);
   const [selectedGamePiece, setSelectedGamePiece] = useState<number[][]>([]);
 

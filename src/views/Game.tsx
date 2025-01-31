@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-
 import GameGrid from "../components/GameGrid";
 import Shape from "../components/Shape";
 import ShapeContainer from "../components/ShapeContainer";
 import { usePieceLogic } from "../hooks/usePieceLogic";
 import { SHAPES } from "../utils/shapes";
 import { useMatrixOperations } from "../hooks/useMatrixOperations";
-import { useBoardState } from "../hooks/useGameState";
+import { useGameState } from "../hooks/useGameState";
 import GameOverModal from "../components/Modal/GameOverModal/GameOverModal";
 import GridDescriptor from "../components/GridDescriptor";
 import { useGamePieceState } from "../hooks/useGamePieceState";
@@ -35,7 +34,8 @@ const Game = () => {
     turnNumber,
     handleGiveUpTurn,
     handleRestartGame,
-  } = useBoardState();
+    updateClickedShapeCoords,
+  } = useGameState();
   const { turnPiece, randomRotatePiece } = usePieceLogic();
   const {
     blockClicked,
@@ -43,7 +43,7 @@ const Game = () => {
     handleBlockClick,
     resetBlockClicked,
     shuffleObject,
-  } = useGamePieceState();
+  } = useGamePieceState(updateClickedShapeCoords);
 
   const [mixedShapes] = useState(shuffleObject(SHAPES));
   const playerColor =
