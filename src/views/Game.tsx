@@ -9,6 +9,8 @@ import { useGameState } from "../hooks/useGameState";
 import GameOverModal from "../components/Modal/GameOverModal/GameOverModal";
 import GridDescriptor from "../components/GridDescriptor";
 import { useGamePieceState } from "../hooks/useGamePieceState";
+import { BrowserView } from "react-device-detect";
+import MobileOverlay from "../components/Overlay/MobileOverlay";
 
 const Game = () => {
   const { deepCopyMatrix } = useMatrixOperations();
@@ -137,52 +139,57 @@ const Game = () => {
   ]);
 
   return (
-    <div className="flex flex-row">
-      <div className="w-screen flex flex-col justify-start items-center m-1 mt-3">
-        <h6 className="text-white text-2xl font-bold drop-shadow-lg">
-          Turn: {turnNumber}
-        </h6>
-        <GameGrid
-          gameGrid={gameGrid}
-          currentPlayer={currentPlayer}
-          handleGridSquareEnter={handleGridSquareEnter}
-          handleGridEnter={handleGridEnter}
-          handleGridLeave={handleGridLeave}
-        />
-        <GridDescriptor
-          playersState={playersState}
-          currentPlayer={currentPlayer}
-          playerColor={playerColor}
-          gameGrid={gameGrid}
-          handleGiveUpTurn={handleGiveUpTurn}
-        />
-      </div>
+    <>
+      <BrowserView>
+        <div className="flex flex-row">
+          <div className="w-screen flex flex-col justify-start items-center m-1 mt-3">
+            <h6 className="text-white text-2xl font-bold drop-shadow-lg">
+              Turn: {turnNumber}
+            </h6>
+            <GameGrid
+              gameGrid={gameGrid}
+              currentPlayer={currentPlayer}
+              handleGridSquareEnter={handleGridSquareEnter}
+              handleGridEnter={handleGridEnter}
+              handleGridLeave={handleGridLeave}
+            />
+            <GridDescriptor
+              playersState={playersState}
+              currentPlayer={currentPlayer}
+              playerColor={playerColor}
+              gameGrid={gameGrid}
+              handleGiveUpTurn={handleGiveUpTurn}
+            />
+          </div>
 
-      {playersState[currentPlayer] && (
-        <ShapeContainer>
-          {Object.entries(mixedShapes).map(([name, gamePiece]) => (
-            <div key={name} style={{ margin: 20 }}>
-              <Shape
-                type={randomRotatePiece(gamePiece)}
-                playerNumber={currentPlayer}
-                playersState={playersState}
-                selectedGamePiece={selectedGamePiece}
-                position={shapePosition}
-                blockClicked={blockClicked}
-                handleBlockClick={handleBlockClick}
-              />
-            </div>
-          ))}
-        </ShapeContainer>
-      )}
-      {playersInGame.length < 1 && (
-        <GameOverModal
-          winner={winner}
-          winningScore={winningScore}
-          handleRestartGame={handleRestartGame}
-        />
-      )}
-    </div>
+          {playersState[currentPlayer] && (
+            <ShapeContainer>
+              {Object.entries(mixedShapes).map(([name, gamePiece]) => (
+                <div key={name} style={{ margin: 20 }}>
+                  <Shape
+                    type={randomRotatePiece(gamePiece)}
+                    playerNumber={currentPlayer}
+                    playersState={playersState}
+                    selectedGamePiece={selectedGamePiece}
+                    position={shapePosition}
+                    blockClicked={blockClicked}
+                    handleBlockClick={handleBlockClick}
+                  />
+                </div>
+              ))}
+            </ShapeContainer>
+          )}
+          {playersInGame.length < 1 && (
+            <GameOverModal
+              winner={winner}
+              winningScore={winningScore}
+              handleRestartGame={handleRestartGame}
+            />
+          )}
+        </div>
+      </BrowserView>
+      <MobileOverlay />
+    </>
   );
 };
 
